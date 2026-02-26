@@ -2,54 +2,220 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pro Code Type</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #0d0d0d; color: white; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        #typing-area { background: #1a1a1a; padding: 40px; border-radius: 12px; border: 1px solid #b6ffe9; font-size: 20px; white-space: pre; }
-        .correct { color: #b6ffe9; }
-        .incorrect { color: #ff6060; background: rgba(255,0,0,0.2); }
-        #hidden-input { position: absolute; opacity: 0; }
+        :root {
+            --bg: #0d0d0d;
+            --purple: #D9CCFF;
+            --teal: #B6FFE9;
+            --gray: #444;
+            --error: #ff6060;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container { width: 90%; max-width: 900px; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(217, 204, 255, 0.1);
+        }
+
+        .stats-row { display: flex; gap: 30px; color: var(--purple); font-size: 1.2rem; }
+        .stat-val { color: var(--teal); font-weight: bold; }
+
+        #progress-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+            border-radius: 2px;
+        }
+        #progress-bar { width: 0%; height: 100%; background: var(--teal); transition: 0.2s; }
+
+        #typing-area {
+            background: rgba(255,255,255,0.03);
+            padding: 40px;
+            border-radius: 12px;
+            position: relative;
+            font-size: 20px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: var(--gray);
+            border: 1px solid rgba(182, 255, 233, 0.1);
+        }
+
+        .correct { color: var(--teal); }
+        .incorrect { color: var(--error); background: rgba(255, 96, 96, 0.2); }
+        .current { border-left: 2px solid var(--teal); animation: blink 1s infinite; }
+
+        @keyframes blink { 50% { border-color: transparent; } }
+
+        #hidden-input { position: absolute; opacity: 0; pointer-events: none; }
+
+        select {
+            background: transparent;
+            color: var(--purple);
+            border: 1px solid var(--purple);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .footer-hint { margin-top: 20px; color: #555; font-size: 0.8rem; text-align: center; }
     </style>
 </head>
 <body>
-    <div id="typing-area">
-        <div id="text-display"></div>
-        <input type="text" id="hidden-input" autofocus>
+
+    <div class="container">
+        <div class="header">
+            <div class="stats-row">
+                <div>WPM: <span id="wpm" class="stat-val">0</span></div>
+                <div>ACC: <span id="acc" class="stat-val">100</span>%</div>
+            </div>
+            <select id="lang-select" onchange="initTest()">
+                <option value="lua">Lua (Roblox)</option>
+                <option value="js">JavaScript</option>
+                <option value="css">CSS</option>
+            </select>
+        </div>
+
+        <div id="progress-container"><div id="progress-bar"></div></div>
+
+        <div id="typing-area" onclick="focusInput()">
+            <div id="text-display"></div>
+            <input type="text" id="hidden-input" spellcheck="false" autocomplete="off">
+        </div>
+
+        <div class="footer-hint">
+            Press <span style="color:var(--purple)">TAB</span> to indent | 
+            Press <span style="color:var(--purple)">ESC</span> to restart
+        </div>
     </div>
+
     <script>
-        const code = "function test()\n\tprint('Tab works!')\nend";
+        const snippets = {
+            lua: "function onTouched(part)\n\tif part.Parent:FindFirstChild('Humanoid') then\n\t\tprint('Player touched!')\n\tend\nend",
+            js: "const fastType = (code) => {\n\treturn code.split('').map(char => {\n\t\treturn char;\n\t});\n};",
+            css: ".player-hud {\n\tposition: absolute;\n\tbackground: #b6ffe9;\n\tborder-radius: 12px;\n}"
+        };
+
+        let currentText = "";
+        let currentIndex = 0;
+        let startTime = null;
+        let errors = 0;
+
         const display = document.getElementById('text-display');
         const input = document.getElementById('hidden-input');
-        
-        // Render text
-        code.split('').forEach(char => {
-            const span = document.createElement('span');
-            span.innerText = char;
-            display.appendChild(span);
-        });
+        const wpmDisplay = document.getElementById('wpm');
+        const accDisplay = document.getElementById('acc');
+        const progressBar = document.getElementById('progress-bar');
 
-        const spans = display.querySelectorAll('span');
+        function initTest() {
+            currentText = snippets[document.getElementById('lang-select').value];
+            currentIndex = 0;
+            startTime = null;
+            errors = 0;
+            input.value = "";
+            wpmDisplay.innerText = "0";
+            accDisplay.innerText = "100";
+            progressBar.style.width = "0%";
+            render();
+        }
 
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab') {
-                e.preventDefault(); // This is the fix for the Tab key!
-                input.value += "\t";
-                update();
-            }
-        });
-
-        input.addEventListener('input', update);
-
-        function update() {
-            const val = input.value;
-            spans.forEach((span, i) => {
-                if (i < val.length) {
-                    span.className = val[i] === code[i] ? 'correct' : 'incorrect';
-                } else {
-                    span.className = '';
-                }
+        function render() {
+            display.innerHTML = "";
+            currentText.split('').forEach((char, i) => {
+                const span = document.createElement('span');
+                span.innerText = char;
+                if (i === currentIndex) span.className = "current";
+                display.appendChild(span);
             });
         }
+
+        function focusInput() { input.focus(); }
+
+        input.addEventListener('keydown', (e) => {
+            // Fix TAB key
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const tabChar = "\t";
+                if (currentText[currentIndex] === tabChar) {
+                    input.value += tabChar;
+                    handleInput();
+                }
+            }
+            // Fix ESC key
+            if (e.key === 'Escape') initTest();
+        });
+
+        input.addEventListener('input', handleInput);
+
+        function handleInput() {
+            if (!startTime) startTime = Date.now();
+            
+            const val = input.value;
+            currentIndex = val.length;
+            const spans = display.querySelectorAll('span');
+
+            let currentErrors = 0;
+            spans.forEach((span, i) => {
+                span.className = "";
+                if (i < val.length) {
+                    if (val[i] === currentText[i]) {
+                        span.classList.add('correct');
+                    } else {
+                        span.classList.add('incorrect');
+                        currentErrors++;
+                    }
+                }
+                if (i === currentIndex) span.classList.add('current');
+            });
+
+            // Update Progress
+            const progress = (currentIndex / currentText.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Update Stats
+            if (currentIndex > 0) {
+                const timeSec = (Date.now() - startTime) / 1000;
+                const wpm = Math.round((currentIndex / 5) / (timeSec / 60));
+                wpmDisplay.innerText = wpm > 0 ? wpm : 0;
+                
+                const acc = Math.round(((currentIndex - currentErrors) / currentIndex) * 100);
+                accDisplay.innerText = acc;
+            }
+
+            if (val.length === currentText.length) {
+                setTimeout(() => alert(`Test Complete! WPM: ${wpmDisplay.innerText}`), 100);
+                initTest();
+            }
+        }
+
+        // Global focus and Esc listener
+        window.addEventListener('click', focusInput);
+        window.addEventListener('keydown', (e) => { if(e.key === 'Escape') initTest(); });
+
+        initTest();
     </script>
 </body>
 </html>
