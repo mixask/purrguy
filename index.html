@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" data-bg="mixed">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,98 +9,102 @@
         :root {
             --purple: #D9CCFF;
             --teal: #B6FFE9;
-            --trans: 0.2s ease;
+            --trans: 0.3s ease;
         }
 
+        /* Theme Vars */
         [data-theme="dark"] {
-            --bg: #0a0a0a;
+            --bg-solid: #0a0a0a;
             --text: #ffffff;
-            --subtext: #444;
-            --card: rgba(255, 255, 255, 0.07);
-            --mix-color: rgba(182, 255, 233, 0.1);
-            --dropdown-bg: #1a1a1a;
+            --subtext: rgba(255,255,255,0.3);
+            --card: rgba(255,255,255,0.08);
+            --mix-bg: linear-gradient(135deg, #0a0a0a 0%, #1a1525 40%, #0f1a18 100%);
         }
 
         [data-theme="light"] {
-            --bg: #ffffff;
+            --bg-solid: #ffffff;
             --text: #1a1a1a;
-            --subtext: #aaa;
-            --card: rgba(0, 0, 0, 0.05);
-            --mix-color: rgba(217, 204, 255, 0.2);
-            --dropdown-bg: #f0f0f0;
+            --subtext: rgba(0,0,0,0.3);
+            --card: rgba(0,0,0,0.05);
+            --mix-bg: linear-gradient(135deg, #ffffff 0%, #f2edff 40%, #edfff9 100%);
         }
 
         body {
-            background-color: var(--bg);
+            background: var(--bg-solid);
             color: var(--text);
             font-family: 'JetBrains Mono', monospace;
             margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden;
+            transition: background var(--trans);
         }
 
-        /* Fixed Dropdown Selection Bug */
-        select {
-            background: var(--card);
-            border: 1px solid var(--mix-color);
-            color: var(--text);
-            padding: 8px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            outline: none;
-            font-family: inherit;
-        }
-
-        select option {
-            background-color: var(--dropdown-bg);
-            color: var(--text);
-            padding: 10px;
-        }
+        [data-bg="mixed"] { background: var(--mix-bg) !important; }
 
         /* Header & Stats */
-        .header { width: 85%; margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .header { width: 85%; margin-top: 30px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
         .stats-grid { display: flex; gap: 30px; }
-        .label { font-size: 10px; color: var(--purple); text-transform: uppercase; display: block; }
+        .label { font-size: 10px; color: var(--purple); text-transform: uppercase; display: block; letter-spacing: 1px; }
         .val { font-size: 24px; color: var(--teal); font-weight: bold; }
 
-        /* Typing Area */
+        /* Dropdown Fix: Explicit Styling */
+        .controls { display: flex; gap: 15px; margin-top: 20px; z-index: 10; }
+        select {
+            background: var(--card);
+            border: 1px solid var(--purple);
+            color: var(--text);
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            appearance: auto; /* Ensures standard dropdown behavior */
+        }
+        select option { background: #1a1a1a; color: white; padding: 10px; }
+
+        /* Typing Zone */
         #container {
-            width: 85%; margin-top: 40px; font-size: 20px; line-height: 1.6;
+            width: 85%; margin-top: 40px; font-size: 22px; line-height: 1.6;
             color: var(--subtext); white-space: pre-wrap; height: 50vh;
-            overflow-y: auto; position: relative; padding: 20px;
-            background: rgba(0,0,0,0.02); border-radius: 15px;
+            overflow-y: auto; position: relative; padding: 30px;
+            background: var(--card); border-radius: 20px;
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .correct { color: var(--teal); transition: color 0.1s; }
-        .incorrect { color: #ff6060; background: rgba(255, 0, 0, 0.15); border-radius: 2px; }
+        .correct { color: var(--teal); }
+        .incorrect { color: #ff6060; background: rgba(255, 0, 0, 0.2); border-radius: 3px; }
         .current { border-left: 2px solid var(--teal); animation: blink 1s infinite; }
         @keyframes blink { 50% { border-color: transparent; } }
 
-        /* Fancy In-App Result Tab */
+        /* Results Tab */
         #result-modal {
             display: none; position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); background: var(--bg);
-            padding: 40px; border-radius: 20px; border: 2px solid var(--teal);
-            box-shadow: 0 0 50px rgba(0,0,0,0.8); text-align: center; z-index: 1000;
+            transform: translate(-50%, -50%); background: var(--bg-solid);
+            padding: 50px; border-radius: 25px; border: 2px solid var(--teal);
+            box-shadow: 0 0 100px rgba(0,0,0,0.8); text-align: center; z-index: 1000;
         }
 
-        #progress { position: fixed; top: 0; left: 0; height: 4px; background: var(--teal); width: 0%; box-shadow: 0 0 10px var(--teal); }
+        #progress { position: fixed; top: 0; left: 0; height: 5px; background: var(--teal); width: 0%; box-shadow: 0 0 15px var(--teal); }
         #hidden-input { position: absolute; opacity: 0; pointer-events: none; }
-        .btn { background: var(--teal); color: #000; padding: 12px 30px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .btn { background: var(--teal); color: #000; padding: 12px 30px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; font-family: inherit; }
     </style>
 </head>
-<body>
+<body data-bg="mixed">
 
     <div id="progress"></div>
 
     <div class="header">
         <div class="stats-grid">
             <div><span class="label">WPM</span><span id="wpm" class="val">0</span></div>
-            <div><span class="label">Acc</span><span id="acc" class="val">100%</span></div>
-            <div><span class="label">Time</span><span id="timer" class="val">0s</span></div>
+            <div><span class="label">Accuracy</span><span id="acc" class="val">100%</span></div>
+            <div><span class="label">Timer</span><span id="timer" class="val">0s</span></div>
         </div>
-        <button onclick="toggleTheme()" style="background:none; border:none; font-size: 24px; cursor:pointer;">🌓</button>
+        <div style="display:flex; gap:10px;">
+            <button class="btn" onclick="toggleBG()" style="margin:0; padding:8px 12px; font-size:12px;">Toggle BG</button>
+            <button onclick="toggleTheme()" style="background:none; border:none; font-size: 24px; cursor:pointer;">🌓</button>
+        </div>
     </div>
 
-    <div style="margin-top: 20px; display: flex; gap: 15px;">
+    <div class="controls">
         <select id="lang" onchange="init()">
             <option value="lua">Lua (Roblox)</option>
             <option value="cpp">C++</option>
@@ -111,7 +115,12 @@
         <select id="line-count" onchange="init()">
             <option value="5">5 Lines</option>
             <option value="15">15 Lines</option>
-            <option value="25">Full Script</option>
+            <option value="30">30 Lines</option>
+        </select>
+        <select id="time-limit">
+            <option value="30">30 Seconds</option>
+            <option value="60" selected>60 Seconds</option>
+            <option value="120">120 Seconds</option>
         </select>
     </div>
 
@@ -121,18 +130,18 @@
     </div>
 
     <div id="result-modal">
-        <h2 style="color:var(--purple)">Test Finished!</h2>
-        <div id="final-stats" style="font-size: 24px; margin: 20px 0;"></div>
-        <button class="btn" onclick="init()">Try Again (Esc)</button>
+        <h1 style="color:var(--purple); margin-top:0;">Test Results</h1>
+        <div id="final-stats" style="font-size: 28px; margin: 30px 0; line-height:1.5;"></div>
+        <button class="btn" onclick="init()">Restart Test (Esc)</button>
     </div>
 
     <script>
         const library = {
-            lua: `local TweenService = game:GetService("TweenService")\nlocal part = script.Parent\nlocal info = TweenInfo.new(2, Enum.EasingStyle.Sine)\nlocal goal = {Size = Vector3.new(10, 10, 10)}\nlocal tween = TweenService:Create(part, info, goal)\ntween:Play()\nprint("Tween Started!")`,
-            cpp: `#include <iostream>\n#include <vector>\nint main() {\n\tstd::vector<int> scores = {95, 88, 72};\n\tfor(int s : scores) {\n\t\tstd::cout << "Score: " << s << std::endl;\n\t}\n\treturn 0;\n}`,
-            cs: `using UnityEngine;\npublic class PlayerController : MonoBehaviour {\n\tpublic float speed = 10f;\n\tvoid Update() {\n\t\tfloat move = Input.GetAxis("Horizontal") * speed * Time.deltaTime;\n\t\ttransform.Translate(move, 0, 0);\n\t}\n}`,
-            java: `import java.util.Scanner;\npublic class App {\n\tpublic static void main(String[] args) {\n\t\tSystem.out.println("Enter Name: ");\n\t\tScanner input = new Scanner(System.in);\n\t\tString name = input.nextLine();\n\t}\n}`,
-            py: `import random\ndef get_lucky_number():\n\treturn random.randint(1, 100)\n\nfor i in range(5):\n\tprint(f"Number {i}: {get_lucky_number()}")`
+            lua: `local TS = game:GetService("TweenService")\nlocal p = script.Parent\nfunction move()\n\tlocal i = TweenInfo.new(1)\n\tlocal g = {Position = Vector3.new(0,10,0)}\n\tTS:Create(p, i, g):Play()\nend\nmove()\nprint("Moving Part")`,
+            cpp: `#include <iostream>\nusing namespace std;\nint main() {\n\tint x = 10;\n\tfloat y = 5.5;\n\tcout << "Result: " << (x + y) << endl;\n\treturn 0;\n}`,
+            cs: `using System;\nclass Program {\n\tstatic void Main() {\n\t\tvar player = new Player("Hero");\n\t\tplayer.LevelUp();\n\t}\n}`,
+            java: `public class Main {\n\tpublic static void main(String[] args) {\n\t\tSystem.out.println("Coding...");\n\t\tint[] nums = {1, 2, 3};\n\t}\n}`,
+            py: `import time\ndef countdown(t):\n\twhile t > 0:\n\t\tprint(f"Time: {t}")\n\t\ttime.sleep(1)\n\t\tt -= 1\ncountdown(5)`
         };
 
         let activeCode = "";
@@ -146,6 +155,11 @@
         function toggleTheme() {
             const current = document.documentElement.getAttribute('data-theme');
             document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+        }
+
+        function toggleBG() {
+            const current = document.body.getAttribute('data-bg');
+            document.body.setAttribute('data-bg', current === 'mixed' ? 'solid' : 'mixed');
         }
 
         function init() {
@@ -182,7 +196,7 @@
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') init();
             if (e.key === 'Tab') {
-                e.preventDefault(); // Prevents browser focus jump
+                e.preventDefault(); // Fix for Tab key focus issue
                 if (activeCode[currentIndex] === '\t') {
                     input.value += '\t';
                     handleInput();
@@ -195,9 +209,11 @@
         function handleInput() {
             if (!startTime && input.value.length > 0) {
                 startTime = Date.now();
+                const limit = parseInt(document.getElementById('time-limit').value);
                 timerInt = setInterval(() => {
                     const now = Math.floor((Date.now() - startTime) / 1000);
                     document.getElementById('timer').innerText = now + "s";
+                    if (now >= limit) finish();
                 }, 1000);
             }
 
@@ -230,7 +246,7 @@
         function finish() {
             clearInterval(timerInt);
             document.getElementById('result-modal').style.display = 'block';
-            document.getElementById('final-stats').innerHTML = `WPM: ${document.getElementById('wpm').innerText} <br> Accuracy: ${document.getElementById('acc').innerText}`;
+            document.getElementById('final-stats').innerHTML = `WPM: <span style="color:var(--teal)">${document.getElementById('wpm').innerText}</span><br>Accuracy: <span style="color:var(--purple)">${document.getElementById('acc').innerText}</span>`;
         }
 
         function focusInput() { input.focus(); }
