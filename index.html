@@ -1,22 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Misha's Code Speedtest</title>
+    <title>Pro Code Speedtest</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0a0a0a;
             --purple: #D9CCFF;
             --teal: #B6FFE9;
-            --gray: #333;
-            --error: #ff6060;
+            --trans: 0.3s ease;
+        }
+
+        /* Dark Theme Vars */
+        [data-theme="dark"] {
+            --bg: #0a0a0a;
+            --text: #ffffff;
+            --subtext: #444;
+            --card: rgba(255, 255, 255, 0.05);
+            --mix-color: rgba(182, 255, 233, 0.1);
+        }
+
+        /* Light Theme Vars */
+        [data-theme="light"] {
+            --bg: #f5f5f5;
+            --text: #1a1a1a;
+            --subtext: #ccc;
+            --card: rgba(0, 0, 0, 0.05);
+            --mix-color: rgba(217, 204, 255, 0.2);
         }
 
         body {
             background-color: var(--bg);
-            color: white;
+            color: var(--text);
             font-family: 'JetBrains Mono', monospace;
             margin: 0;
             display: flex;
@@ -24,73 +40,76 @@
             align-items: center;
             height: 100vh;
             overflow: hidden;
+            transition: background var(--trans), color var(--trans);
         }
 
-        /* Top Bar & Stats */
-        .header {
-            width: 80%;
-            margin-top: 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(217, 204, 255, 0.1);
-            padding-bottom: 10px;
-        }
+        /* Header & Settings */
+        .header { width: 85%; margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .stats-grid { display: flex; gap: 30px; }
+        .stat-item { display: flex; flex-direction: column; }
+        .label { font-size: 10px; color: var(--purple); text-transform: uppercase; }
+        .val { font-size: 22px; color: var(--teal); font-weight: bold; }
 
-        .stats { display: flex; gap: 40px; }
-        .stat-box { display: flex; flex-direction: column; }
-        .stat-label { font-size: 10px; color: var(--purple); text-transform: uppercase; }
-        .stat-val { font-size: 24px; color: var(--teal); font-weight: bold; }
-
-        /* Settings Menu */
-        .settings-bar {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 10px 30px;
+        .controls {
+            background: var(--card);
+            padding: 12px 25px;
             border-radius: 50px;
             margin-top: 20px;
             display: flex;
-            gap: 20px;
+            gap: 15px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid var(--mix-color);
         }
 
-        .setting-group { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #777; }
-        select, input {
-            background: none; border: none; color: var(--purple);
-            font-family: inherit; font-size: 14px; cursor: pointer; outline: none;
+        select, input, button {
+            background: none; border: none; color: var(--text);
+            font-family: inherit; font-size: 13px; cursor: pointer; outline: none;
         }
 
-        /* Typing Area */
-        #typing-container {
-            width: 80%;
-            margin-top: 40px;
-            position: relative;
-            font-size: 22px;
-            line-height: 1.5;
-            color: var(--gray);
+        /* Typing Zone */
+        #container {
+            width: 85%;
+            margin-top: 30px;
+            font-size: 20px;
+            line-height: 1.6;
+            color: var(--subtext);
             white-space: pre-wrap;
-            word-break: break-all;
             height: 50vh;
             overflow-y: auto;
+            position: relative;
         }
 
-        .char { position: relative; }
         .correct { color: var(--teal); }
-        .incorrect { color: var(--error); background: rgba(255, 96, 96, 0.2); }
+        .incorrect { color: #ff6060; background: rgba(255, 0, 0, 0.1); }
         .current { border-left: 2px solid var(--teal); animation: blink 1s infinite; }
-
         @keyframes blink { 50% { border-color: transparent; } }
-        #hidden-input { position: absolute; opacity: 0; pointer-events: none; }
 
-        /* Progress Bar */
-        #progress {
-            position: fixed; top: 0; left: 0;
-            height: 3px; background: var(--teal);
-            box-shadow: 0 0 10px var(--teal);
-            transition: 0.1s; width: 0%;
+        /* Custom Modal (The "Finish Tab") */
+        #result-modal {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid var(--teal);
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            text-align: center;
+            z-index: 100;
         }
 
-        .restart-hint { margin-top: 30px; color: #444; font-size: 12px; }
+        .btn-main {
+            background: var(--teal);
+            color: #000;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        #progress { position: fixed; top: 0; left: 0; height: 4px; background: var(--teal); width: 0%; transition: 0.1s; }
+        #hidden-input { position: absolute; opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -98,66 +117,76 @@
     <div id="progress"></div>
 
     <div class="header">
-        <div class="stats">
-            <div class="stat-box"><span class="stat-label">WPM</span><span id="wpm" class="stat-val">0</span></div>
-            <div class="stat-box"><span class="stat-label">Accuracy</span><span id="acc" class="stat-val">100%</span></div>
-            <div class="stat-box"><span class="stat-label">Time</span><span id="timer" class="stat-val">0s</span></div>
+        <div class="stats-grid">
+            <div class="stat-item"><span class="label">WPM</span><span id="wpm" class="val">0</span></div>
+            <div class="stat-item"><span class="label">Acc</span><span id="acc" class="val">100%</span></div>
+            <div class="stat-item"><span class="label">Time</span><span id="timer" class="val">0s</span></div>
         </div>
-        <div style="font-weight: bold; letter-spacing: 2px; color: var(--purple);">MISHA_TYPE.v2</div>
+        <button onclick="toggleTheme()" style="font-size: 20px;">🌓</button>
     </div>
 
-    <div class="settings-bar">
-        <div class="setting-group">Language: 
-            <select id="lang" onchange="init()">
-                <option value="lua">Lua</option>
-                <option value="js">JavaScript</option>
-                <option value="python">Python</option>
-            </select>
-        </div>
-        <div class="setting-group">Lines: 
-            <select id="lines" onchange="init()">
-                <option value="5">5</option>
-                <option value="15">15</option>
-                <option value="30">30</option>
-            </select>
-        </div>
-        <div class="setting-group">Limit: 
-            <input type="number" id="time-limit" value="60" style="width: 40px;">s
+    <div class="controls">
+        <select id="lang" onchange="init()">
+            <option value="lua">Lua (Roblox)</option>
+            <option value="cpp">C++</option>
+            <option value="cs">C#</option>
+            <option value="java">Java</option>
+            <option value="py">Python</option>
+            <option value="web">HTML/CSS</option>
+        </select>
+        <select id="line-count" onchange="init()">
+            <option value="5">5 Lines</option>
+            <option value="15">15 Lines</option>
+            <option value="30">30 Lines</option>
+        </select>
+        <div style="display:flex; align-items:center; gap:5px;">
+            Limit: <input type="number" id="time-limit" value="60" style="width:35px">s
         </div>
     </div>
 
-    <div id="typing-container" onclick="focusInput()">
+    <div id="container" onclick="focusInput()">
         <div id="display"></div>
         <input type="text" id="hidden-input" autocomplete="off" spellcheck="false">
     </div>
 
-    <div class="restart-hint">Press <b>ESC</b> to restart | <b>TAB</b> to indent</div>
+    <div id="result-modal">
+        <h2 style="color:var(--purple)">Test Completed!</h2>
+        <div id="final-stats" style="font-size: 24px; margin: 20px 0;"></div>
+        <button class="btn-main" onclick="closeModal()">Restart (Esc)</button>
+    </div>
 
     <script>
-        // REPLACE THESE WITH YOUR FULL 7.6k CODES
         const library = {
-            lua: `function onTouched(hit)\n\tlocal hum = hit.Parent:FindFirstChild("Humanoid")\n\tif hum then\n\t\thum.Health = 0\n\tend\nend`,
-            js: `const calculateWPM = (chars, time) => {\n\tconst words = chars / 5;\n\treturn Math.round(words / time);\n};`,
-            python: `def move_part(position):\n\tpart.Position = Vector3.new(position)\n\tprint("Moved to " + position)`
+            lua: `local part = Instance.new("Part")\npart.Parent = workspace\npart.Anchored = true\nfunction onHit(obj)\n\tprint("Hit by " .. obj.Name)\nend`,
+            cpp: `#include <iostream>\nint main() {\n\tstd::cout << "Hello World" << std::endl;\n\treturn 0;\n}`,
+            cs: `using System;\npublic class Player {\n\tpublic int Health { get; set; }\n\tpublic void Heal(int amt) => Health += amt;\n}`,
+            java: `public class Main {\n\tpublic static void main(String[] args) {\n\t\tSystem.out.println("Java Typing");\n\t}\n}`,
+            py: `def calculate_area(radius):\n\timport math\n\treturn math.pi * radius ** 2\n\nprint(calculate_area(5))`,
+            web: `<div class="card">\n\t<h1>Title</h1>\n\t<p>Welcome to my site</p>\n</div>\n<style>\n\t.card { color: #b6ffe9; }\n</style>`
         };
 
         let activeCode = "";
         let currentIndex = 0;
         let startTime = null;
-        let timerInterval = null;
+        let timerInt = null;
 
         const display = document.getElementById('display');
         const input = document.getElementById('hidden-input');
 
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+        }
+
         function init() {
-            clearInterval(timerInterval);
+            clearInterval(timerInt);
             const raw = library[document.getElementById('lang').value];
-            const lineCount = parseInt(document.getElementById('lines').value);
+            const maxLines = parseInt(document.getElementById('line-count').value);
             
-            // Randomize: take a random chunk of lines if possible
+            // Fixed randomizer logic
             const lines = raw.split('\n');
-            const start = Math.floor(Math.random() * Math.max(1, lines.length - lineCount));
-            activeCode = lines.slice(start, start + lineCount).join('\n');
+            const start = Math.floor(Math.random() * Math.max(1, lines.length - maxLines));
+            activeCode = lines.slice(start, start + maxLines).join('\n');
 
             currentIndex = 0;
             startTime = null;
@@ -166,7 +195,7 @@
             document.getElementById('acc').innerText = "100%";
             document.getElementById('timer').innerText = "0s";
             document.getElementById('progress').style.width = "0%";
-            
+            document.getElementById('result-modal').style.display = 'none';
             render();
             input.focus();
         }
@@ -176,17 +205,15 @@
             activeCode.split('').forEach((char, i) => {
                 const span = document.createElement('span');
                 span.innerText = char;
-                span.className = 'char' + (i === 0 ? ' current' : '');
+                span.className = (i === 0) ? 'current' : '';
                 display.appendChild(span);
             });
         }
 
-        function focusInput() { input.focus(); }
-
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') init();
-            if (e.key === 'Tab' && document.activeElement === input) {
-                e.preventDefault(); // Prevents jumping out of browser
+            if (e.key === 'Tab') {
+                e.preventDefault(); // Fix for browser jump
                 if (activeCode[currentIndex] === '\t') {
                     input.value += '\t';
                     handleInput();
@@ -208,7 +235,7 @@
             let errs = 0;
 
             spans.forEach((span, i) => {
-                span.className = 'char';
+                span.className = "";
                 if (i < val.length) {
                     if (val[i] === activeCode[i]) span.classList.add('correct');
                     else { span.classList.add('incorrect'); errs++; }
@@ -216,35 +243,36 @@
                 if (i === currentIndex) span.classList.add('current');
             });
 
-            // Math Logic
-            const timeElapsed = (Date.now() - startTime) / 60000;
-            if (timeElapsed > 0 && currentIndex > 5) {
-                const wpm = Math.round((currentIndex / 5) / timeElapsed);
+            const elapsed = (Date.now() - startTime) / 60000;
+            if (elapsed > 0 && currentIndex > 2) {
+                const wpm = Math.round((currentIndex / 5) / elapsed);
                 document.getElementById('wpm').innerText = Math.min(wpm, 500);
                 const acc = Math.round(((currentIndex - errs) / currentIndex) * 100);
                 document.getElementById('acc').innerText = acc + "%";
             }
 
             document.getElementById('progress').style.width = (currentIndex / activeCode.length * 100) + "%";
-
             if (val.length >= activeCode.length) finish();
         }
 
         function startTimer() {
             const limit = parseInt(document.getElementById('time-limit').value);
-            timerInterval = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                document.getElementById('timer').innerText = elapsed + "s";
-                if (elapsed >= limit) finish();
+            timerInt = setInterval(() => {
+                const now = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('timer').innerText = now + "s";
+                if (now >= limit) finish();
             }, 1000);
         }
 
         function finish() {
-            clearInterval(timerInterval);
-            alert("Test Complete! Final WPM: " + document.getElementById('wpm').innerText);
-            init();
+            clearInterval(timerInt);
+            document.getElementById('result-modal').style.display = 'block';
+            document.getElementById('final-stats').innerHTML = `WPM: ${document.getElementById('wpm').innerText} <br> Accuracy: ${document.getElementById('acc').innerText}`;
         }
 
+        function closeModal() { init(); }
+        function focusInput() { input.focus(); }
+        window.addEventListener('click', focusInput);
         init();
     </script>
 </body>
