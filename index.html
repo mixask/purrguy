@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Misha's Pro Code Type</title>
+    <title>Misha's Code Speedtest</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0d0d0d;
+            --bg: #0a0a0a;
             --purple: #D9CCFF;
             --teal: #B6FFE9;
-            --gray: #444;
+            --gray: #333;
             --error: #ff6060;
         }
 
@@ -22,179 +22,230 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             height: 100vh;
             overflow: hidden;
         }
 
-        .container { width: 90%; max-width: 900px; }
-
+        /* Top Bar & Stats */
         .header {
+            width: 80%;
+            margin-top: 40px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
+            align-items: center;
             border-bottom: 1px solid rgba(217, 204, 255, 0.1);
+            padding-bottom: 10px;
         }
 
-        .stats-row { display: flex; gap: 30px; color: var(--purple); font-size: 1.2rem; }
-        .stat-val { color: var(--teal); font-weight: bold; }
+        .stats { display: flex; gap: 40px; }
+        .stat-box { display: flex; flex-direction: column; }
+        .stat-label { font-size: 10px; color: var(--purple); text-transform: uppercase; }
+        .stat-val { font-size: 24px; color: var(--teal); font-weight: bold; }
 
-        #progress-container {
-            width: 100%;
-            height: 4px;
-            background: rgba(255,255,255,0.1);
-            margin-bottom: 20px;
-            border-radius: 2px;
+        /* Settings Menu */
+        .settings-bar {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 30px;
+            border-radius: 50px;
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.05);
         }
-        #progress-bar { width: 0%; height: 100%; background: var(--teal); transition: 0.1s; }
 
-        #typing-area {
-            background: rgba(255,255,255,0.03);
-            padding: 40px;
-            border-radius: 12px;
+        .setting-group { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #777; }
+        select, input {
+            background: none; border: none; color: var(--purple);
+            font-family: inherit; font-size: 14px; cursor: pointer; outline: none;
+        }
+
+        /* Typing Area */
+        #typing-container {
+            width: 80%;
+            margin-top: 40px;
             position: relative;
-            font-size: 18px;
-            line-height: 1.6;
+            font-size: 22px;
+            line-height: 1.5;
+            color: var(--gray);
             white-space: pre-wrap;
             word-break: break-all;
-            color: var(--gray);
-            border: 1px solid rgba(182, 255, 233, 0.1);
-            max-height: 60vh;
+            height: 50vh;
             overflow-y: auto;
         }
 
+        .char { position: relative; }
         .correct { color: var(--teal); }
         .incorrect { color: var(--error); background: rgba(255, 96, 96, 0.2); }
         .current { border-left: 2px solid var(--teal); animation: blink 1s infinite; }
 
         @keyframes blink { 50% { border-color: transparent; } }
-
         #hidden-input { position: absolute; opacity: 0; pointer-events: none; }
 
-        .footer-hint { margin-top: 20px; color: #555; font-size: 0.8rem; text-align: center; }
+        /* Progress Bar */
+        #progress {
+            position: fixed; top: 0; left: 0;
+            height: 3px; background: var(--teal);
+            box-shadow: 0 0 10px var(--teal);
+            transition: 0.1s; width: 0%;
+        }
+
+        .restart-hint { margin-top: 30px; color: #444; font-size: 12px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="header">
-            <div class="stats-row">
-                <div>WPM: <span id="wpm" class="stat-val">0</span></div>
-                <div>ACC: <span id="acc" class="stat-val">100</span>%</div>
-            </div>
-            <div style="color: var(--purple); font-weight: bold;">SPEEDTEST.EXE</div>
+    <div id="progress"></div>
+
+    <div class="header">
+        <div class="stats">
+            <div class="stat-box"><span class="stat-label">WPM</span><span id="wpm" class="stat-val">0</span></div>
+            <div class="stat-box"><span class="stat-label">Accuracy</span><span id="acc" class="stat-val">100%</span></div>
+            <div class="stat-box"><span class="stat-label">Time</span><span id="timer" class="stat-val">0s</span></div>
         </div>
+        <div style="font-weight: bold; letter-spacing: 2px; color: var(--purple);">MISHA_TYPE.v2</div>
+    </div>
 
-        <div id="progress-container"><div id="progress-bar"></div></div>
-
-        <div id="typing-area" onclick="focusInput()">
-            <div id="text-display"></div>
-            <input type="text" id="hidden-input" spellcheck="false" autocomplete="off">
+    <div class="settings-bar">
+        <div class="setting-group">Language: 
+            <select id="lang" onchange="init()">
+                <option value="lua">Lua</option>
+                <option value="js">JavaScript</option>
+                <option value="python">Python</option>
+            </select>
         </div>
-
-        <div class="footer-hint">
-            TAB to indent | ESC to restart | Click box to focus
+        <div class="setting-group">Lines: 
+            <select id="lines" onchange="init()">
+                <option value="5">5</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+            </select>
+        </div>
+        <div class="setting-group">Limit: 
+            <input type="number" id="time-limit" value="60" style="width: 40px;">s
         </div>
     </div>
 
-    <script>
-        // PASTE YOUR 7.6k CHARACTER CODE INSIDE THE QUOTES BELOW
-        const codeSnippet = "function start()\n\tprint('Hello Misha')\nend"; 
+    <div id="typing-container" onclick="focusInput()">
+        <div id="display"></div>
+        <input type="text" id="hidden-input" autocomplete="off" spellcheck="false">
+    </div>
 
+    <div class="restart-hint">Press <b>ESC</b> to restart | <b>TAB</b> to indent</div>
+
+    <script>
+        // REPLACE THESE WITH YOUR FULL 7.6k CODES
+        const library = {
+            lua: `function onTouched(hit)\n\tlocal hum = hit.Parent:FindFirstChild("Humanoid")\n\tif hum then\n\t\thum.Health = 0\n\tend\nend`,
+            js: `const calculateWPM = (chars, time) => {\n\tconst words = chars / 5;\n\treturn Math.round(words / time);\n};`,
+            python: `def move_part(position):\n\tpart.Position = Vector3.new(position)\n\tprint("Moved to " + position)`
+        };
+
+        let activeCode = "";
         let currentIndex = 0;
         let startTime = null;
-        let errors = 0;
+        let timerInterval = null;
 
-        const display = document.getElementById('text-display');
+        const display = document.getElementById('display');
         const input = document.getElementById('hidden-input');
-        const wpmDisplay = document.getElementById('wpm');
-        const accDisplay = document.getElementById('acc');
-        const progressBar = document.getElementById('progress-bar');
 
-        function initTest() {
+        function init() {
+            clearInterval(timerInterval);
+            const raw = library[document.getElementById('lang').value];
+            const lineCount = parseInt(document.getElementById('lines').value);
+            
+            // Randomize: take a random chunk of lines if possible
+            const lines = raw.split('\n');
+            const start = Math.floor(Math.random() * Math.max(1, lines.length - lineCount));
+            activeCode = lines.slice(start, start + lineCount).join('\n');
+
             currentIndex = 0;
             startTime = null;
-            errors = 0;
             input.value = "";
-            wpmDisplay.innerText = "0";
-            accDisplay.innerText = "100";
-            progressBar.style.width = "0%";
+            document.getElementById('wpm').innerText = "0";
+            document.getElementById('acc').innerText = "100%";
+            document.getElementById('timer').innerText = "0s";
+            document.getElementById('progress').style.width = "0%";
+            
             render();
+            input.focus();
         }
 
         function render() {
             display.innerHTML = "";
-            codeSnippet.split('').forEach((char, i) => {
+            activeCode.split('').forEach((char, i) => {
                 const span = document.createElement('span');
                 span.innerText = char;
-                if (i === 0) span.className = "current";
+                span.className = 'char' + (i === 0 ? ' current' : '');
                 display.appendChild(span);
             });
         }
 
         function focusInput() { input.focus(); }
 
-        // THE TAB AND ESC FIXES
         window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') init();
             if (e.key === 'Tab' && document.activeElement === input) {
-                e.preventDefault(); // STOPS browser jump
-                if (codeSnippet[currentIndex] === '\t') {
+                e.preventDefault(); // Prevents jumping out of browser
+                if (activeCode[currentIndex] === '\t') {
                     input.value += '\t';
                     handleInput();
                 }
             }
-            if (e.key === 'Escape') initTest(); // RESTART FEATURE
         });
 
         input.addEventListener('input', handleInput);
 
         function handleInput() {
-            // Start timer on first keypress
-            if (!startTime && input.value.length > 0) startTime = Date.now();
-            
+            if (!startTime && input.value.length > 0) {
+                startTime = Date.now();
+                startTimer();
+            }
+
             const val = input.value;
             currentIndex = val.length;
             const spans = display.querySelectorAll('span');
+            let errs = 0;
 
-            let currentErrors = 0;
             spans.forEach((span, i) => {
-                span.className = "";
+                span.className = 'char';
                 if (i < val.length) {
-                    if (val[i] === codeSnippet[i]) {
-                        span.classList.add('correct');
-                    } else {
-                        span.classList.add('incorrect');
-                        currentErrors++;
-                    }
+                    if (val[i] === activeCode[i]) span.classList.add('correct');
+                    else { span.classList.add('incorrect'); errs++; }
                 }
                 if (i === currentIndex) span.classList.add('current');
             });
 
-            // Update Progress Bar
-            const progress = (currentIndex / codeSnippet.length) * 100;
-            progressBar.style.width = `${progress}%`;
-
-            // WPM MATH FIX
-            if (currentIndex > 5 && startTime) {
-                const timeSec = (Date.now() - startTime) / 1000;
-                const wpm = Math.round((currentIndex / 5) / (timeSec / 60));
-                wpmDisplay.innerText = Math.min(wpm, 500); // Caps at 500 to avoid glitches
-                
-                const acc = Math.round(((currentIndex - currentErrors) / currentIndex) * 100);
-                accDisplay.innerText = acc;
+            // Math Logic
+            const timeElapsed = (Date.now() - startTime) / 60000;
+            if (timeElapsed > 0 && currentIndex > 5) {
+                const wpm = Math.round((currentIndex / 5) / timeElapsed);
+                document.getElementById('wpm').innerText = Math.min(wpm, 500);
+                const acc = Math.round(((currentIndex - errs) / currentIndex) * 100);
+                document.getElementById('acc').innerText = acc + "%";
             }
 
-            // Finish Logic
-            if (val.length === codeSnippet.length) {
-                alert("Finished! WPM: " + wpmDisplay.innerText);
-                initTest();
-            }
+            document.getElementById('progress').style.width = (currentIndex / activeCode.length * 100) + "%";
+
+            if (val.length >= activeCode.length) finish();
         }
 
-        window.addEventListener('click', focusInput);
-        initTest();
+        function startTimer() {
+            const limit = parseInt(document.getElementById('time-limit').value);
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('timer').innerText = elapsed + "s";
+                if (elapsed >= limit) finish();
+            }, 1000);
+        }
+
+        function finish() {
+            clearInterval(timerInterval);
+            alert("Test Complete! Final WPM: " + document.getElementById('wpm').innerText);
+            init();
+        }
+
+        init();
     </script>
 </body>
 </html>
