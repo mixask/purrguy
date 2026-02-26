@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Code Type</title>
+    <title>Misha's Pro Code Type</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -48,19 +48,21 @@
             margin-bottom: 20px;
             border-radius: 2px;
         }
-        #progress-bar { width: 0%; height: 100%; background: var(--teal); transition: 0.2s; }
+        #progress-bar { width: 0%; height: 100%; background: var(--teal); transition: 0.1s; }
 
         #typing-area {
             background: rgba(255,255,255,0.03);
             padding: 40px;
             border-radius: 12px;
             position: relative;
-            font-size: 20px;
+            font-size: 18px;
             line-height: 1.6;
             white-space: pre-wrap;
             word-break: break-all;
             color: var(--gray);
             border: 1px solid rgba(182, 255, 233, 0.1);
+            max-height: 60vh;
+            overflow-y: auto;
         }
 
         .correct { color: var(--teal); }
@@ -70,16 +72,6 @@
         @keyframes blink { 50% { border-color: transparent; } }
 
         #hidden-input { position: absolute; opacity: 0; pointer-events: none; }
-
-        select {
-            background: transparent;
-            color: var(--purple);
-            border: 1px solid var(--purple);
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            outline: none;
-        }
 
         .footer-hint { margin-top: 20px; color: #555; font-size: 0.8rem; text-align: center; }
     </style>
@@ -92,11 +84,7 @@
                 <div>WPM: <span id="wpm" class="stat-val">0</span></div>
                 <div>ACC: <span id="acc" class="stat-val">100</span>%</div>
             </div>
-            <select id="lang-select" onchange="initTest()">
-                <option value="lua">Lua (Roblox)</option>
-                <option value="js">JavaScript</option>
-                <option value="css">CSS</option>
-            </select>
+            <div style="color: var(--purple); font-weight: bold;">SPEEDTEST.EXE</div>
         </div>
 
         <div id="progress-container"><div id="progress-bar"></div></div>
@@ -107,19 +95,14 @@
         </div>
 
         <div class="footer-hint">
-            Press <span style="color:var(--purple)">TAB</span> to indent | 
-            Press <span style="color:var(--purple)">ESC</span> to restart
+            TAB to indent | ESC to restart | Click box to focus
         </div>
     </div>
 
     <script>
-        const snippets = {
-            lua: "function onTouched(part)\n\tif part.Parent:FindFirstChild('Humanoid') then\n\t\tprint('Player touched!')\n\tend\nend",
-            js: "const fastType = (code) => {\n\treturn code.split('').map(char => {\n\t\treturn char;\n\t});\n};",
-            css: ".player-hud {\n\tposition: absolute;\n\tbackground: #b6ffe9;\n\tborder-radius: 12px;\n}"
-        };
+        // PASTE YOUR 7.6k CHARACTER CODE INSIDE THE QUOTES BELOW
+        const codeSnippet = "function start()\n\tprint('Hello Misha')\nend"; 
 
-        let currentText = "";
         let currentIndex = 0;
         let startTime = null;
         let errors = 0;
@@ -131,7 +114,6 @@
         const progressBar = document.getElementById('progress-bar');
 
         function initTest() {
-            currentText = snippets[document.getElementById('lang-select').value];
             currentIndex = 0;
             startTime = null;
             errors = 0;
@@ -144,34 +126,33 @@
 
         function render() {
             display.innerHTML = "";
-            currentText.split('').forEach((char, i) => {
+            codeSnippet.split('').forEach((char, i) => {
                 const span = document.createElement('span');
                 span.innerText = char;
-                if (i === currentIndex) span.className = "current";
+                if (i === 0) span.className = "current";
                 display.appendChild(span);
             });
         }
 
         function focusInput() { input.focus(); }
 
-        input.addEventListener('keydown', (e) => {
-            // Fix TAB key
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                const tabChar = "\t";
-                if (currentText[currentIndex] === tabChar) {
-                    input.value += tabChar;
+        // THE TAB AND ESC FIXES
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' && document.activeElement === input) {
+                e.preventDefault(); // STOPS browser jump
+                if (codeSnippet[currentIndex] === '\t') {
+                    input.value += '\t';
                     handleInput();
                 }
             }
-            // Fix ESC key
-            if (e.key === 'Escape') initTest();
+            if (e.key === 'Escape') initTest(); // RESTART FEATURE
         });
 
         input.addEventListener('input', handleInput);
 
         function handleInput() {
-            if (!startTime) startTime = Date.now();
+            // Start timer on first keypress
+            if (!startTime && input.value.length > 0) startTime = Date.now();
             
             const val = input.value;
             currentIndex = val.length;
@@ -181,7 +162,7 @@
             spans.forEach((span, i) => {
                 span.className = "";
                 if (i < val.length) {
-                    if (val[i] === currentText[i]) {
+                    if (val[i] === codeSnippet[i]) {
                         span.classList.add('correct');
                     } else {
                         span.classList.add('incorrect');
@@ -191,30 +172,28 @@
                 if (i === currentIndex) span.classList.add('current');
             });
 
-            // Update Progress
-            const progress = (currentIndex / currentText.length) * 100;
+            // Update Progress Bar
+            const progress = (currentIndex / codeSnippet.length) * 100;
             progressBar.style.width = `${progress}%`;
 
-            // Update Stats
-            if (currentIndex > 0) {
+            // WPM MATH FIX
+            if (currentIndex > 5 && startTime) {
                 const timeSec = (Date.now() - startTime) / 1000;
                 const wpm = Math.round((currentIndex / 5) / (timeSec / 60));
-                wpmDisplay.innerText = wpm > 0 ? wpm : 0;
+                wpmDisplay.innerText = Math.min(wpm, 500); // Caps at 500 to avoid glitches
                 
                 const acc = Math.round(((currentIndex - currentErrors) / currentIndex) * 100);
                 accDisplay.innerText = acc;
             }
 
-            if (val.length === currentText.length) {
-                setTimeout(() => alert(`Test Complete! WPM: ${wpmDisplay.innerText}`), 100);
+            // Finish Logic
+            if (val.length === codeSnippet.length) {
+                alert("Finished! WPM: " + wpmDisplay.innerText);
                 initTest();
             }
         }
 
-        // Global focus and Esc listener
         window.addEventListener('click', focusInput);
-        window.addEventListener('keydown', (e) => { if(e.key === 'Escape') initTest(); });
-
         initTest();
     </script>
 </body>
