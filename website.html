@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pro Code Type</title>
+    <style>
+        body { background: #0d0d0d; color: white; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        #typing-area { background: #1a1a1a; padding: 40px; border-radius: 12px; border: 1px solid #b6ffe9; font-size: 20px; white-space: pre; }
+        .correct { color: #b6ffe9; }
+        .incorrect { color: #ff6060; background: rgba(255,0,0,0.2); }
+        #hidden-input { position: absolute; opacity: 0; }
+    </style>
+</head>
+<body>
+    <div id="typing-area">
+        <div id="text-display"></div>
+        <input type="text" id="hidden-input" autofocus>
+    </div>
+    <script>
+        const code = "function test()\n\tprint('Tab works!')\nend";
+        const display = document.getElementById('text-display');
+        const input = document.getElementById('hidden-input');
+        
+        // Render text
+        code.split('').forEach(char => {
+            const span = document.createElement('span');
+            span.innerText = char;
+            display.appendChild(span);
+        });
+
+        const spans = display.querySelectorAll('span');
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault(); // This is the fix for the Tab key!
+                input.value += "\t";
+                update();
+            }
+        });
+
+        input.addEventListener('input', update);
+
+        function update() {
+            const val = input.value;
+            spans.forEach((span, i) => {
+                if (i < val.length) {
+                    span.className = val[i] === code[i] ? 'correct' : 'incorrect';
+                } else {
+                    span.className = '';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
