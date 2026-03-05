@@ -2,111 +2,140 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Code Typing Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Code Typer</title>
     <style>
-        body { font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 20px; }
-        #display { background: #252526; padding: 20px; border-radius: 8px; white-space: pre-wrap; margin-bottom: 20px; border: 1px solid #333; min-height: 200px; }
-        textarea { width: 100%; height: 150px; background: #2d2d2d; color: white; border: 2px solid #3e3e42; padding: 10px; font-family: monospace; font-size: 16px; }
-        textarea:disabled { opacity: 0.5; cursor: not-allowed; }
-        .controls { margin-bottom: 10px; display: flex; gap: 20px; align-items: center; }
-        #timer { font-size: 24px; color: #ce9178; font-weight: bold; }
+        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --accent: #58a6ff; --error: #f85149; }
+        body { font-family: 'Segoe UI', monospace; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; padding: 40px; }
+        .container { max-width: 800px; width: 100%; background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid #30363d; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #display { background: #000; padding: 20px; border-radius: 6px; white-space: pre; overflow-x: auto; font-family: 'Consolas', monospace; font-size: 14px; line-height: 1.6; margin: 20px 0; border-left: 4px solid var(--accent); color: #8b949e; }
+        textarea { width: 100%; height: 120px; background: #0d1117; color: white; border: 1px solid #30363d; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 16px; resize: none; outline: none; transition: border 0.3s; }
+        textarea:focus { border-color: var(--accent); }
+        textarea:disabled { background: #21262d; cursor: not-allowed; opacity: 0.6; }
+        .stats-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn:hover { opacity: 0.9; }
+        select { background: #21262d; color: white; border: 1px solid #30363d; padding: 5px 10px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <div class="controls">
-        <select id="line-select">
-            <option value="15">15 Lines</option>
-            <option value="20">20 Lines</option>
-            <option value="30">30 Lines</option>
-        </select>
-        <div id="timer">60s</div>
-        <button onclick="resetTest()">Reset</button>
+<div class="container" id="main-test">
+    <div class="stats-bar">
+        <div>
+            Lines: 
+            <select id="line-select">
+                <option value="15">15 Lines</option>
+                <option value="20">20 Lines</option>
+                <option value="30">30 Lines</option>
+            </select>
+        </div>
+        <div id="timer" style="font-size: 1.5rem; color: var(--accent);">Time: 60s</div>
+        <button class="btn" onclick="resetTest()">Reset</button>
     </div>
 
-    <div id="display">Loading code...</div>
-    <textarea id="typing-input" placeholder="Start typing here to begin the timer..."></textarea>
+    <div id="display">Generating code...</div>
+    <textarea id="typing-input" placeholder="Start typing to begin..."></textarea>
+</div>
 
-    <script>
-        const display = document.getElementById('display');
-        const input = document.getElementById('typing-input');
-        const lineSelect = document.getElementById('line-select');
-        const timerDisplay = document.getElementById('timer');
+<div class="container" id="results-page" style="display:none; text-align: center;">
+    <h1 style="color: var(--accent);">Test Complete!</h1>
+    <div style="font-size: 3rem; margin: 20px 0;" id="wpm-display">0 WPM</div>
+    <p id="accuracy-display">Accuracy: 0%</p>
+    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 30px;">
+        <button class="btn" onclick="location.reload()">Try Again</button>
+        <button class="btn" style="background: #238636;" onclick="saveAsText()">Save Result (.txt)</button>
+    </div>
+</div>
 
-        let timer;
-        let timeLeft = 60;
-        let isStarted = false;
+<script>
+    const codeSnippets = [
+        "const app = express();", "for(let i=0; i<data.length; i++)", "return JSON.stringify(results);",
+        "import { useEffect } from 'react';", "async function fetchData() {", "const [state, setState] = useState(null);",
+        "console.error('Error connecting to DB');", "process.env.PORT || 3000;", "git commit -m 'Fixed typing bug';",
+        "npm install lucide-react", "<div>{items.map(item => <li>{item}</li>)}</div>", "export const config = { runtime: 'edge' };",
+        "const result = await db.user.findMany();", "const theme = localStorage.getItem('theme');", "if(!res.ok) throw new Error();"
+    ];
 
-        // 1. IMPROVEMENT: More diverse code snippets
-        const codeBank = [
-            "function init() { console.log('System Online'); }",
-            "const data = fetch('api/v1/users').then(r => r.json());",
-            "if (error) { throw new Error('Operation Failed'); }",
-            "document.addEventListener('click', (e) => { e.preventDefault(); });",
-            "export default class Controller { constructor() { this.state = {}; } }",
-            "const sorted = arr.sort((a, b) => a - b);",
-            "let result = await db.collection('logs').find({}).toArray();"
-        ];
+    let timer;
+    let timeLeft = 60;
+    let isStarted = false;
+    let finalWpm = 0;
 
-        function generateText() {
-            const lineCount = parseInt(lineSelect.value);
-            let content = [];
-            // Fills the display based on chosen line count (15, 20, or 30)
-            for (let i = 0; i < lineCount; i++) {
-                let randomLine = codeBank[Math.floor(Math.random() * codeBank.length)];
-                content.push(`${i + 1}  ${randomLine}`);
-            }
-            display.innerText = content.join('\n');
+    const input = document.getElementById('typing-input');
+    const display = document.getElementById('display');
+    const timerText = document.getElementById('timer');
+    const lineSelect = document.getElementById('line-select');
+
+    function generateCode() {
+        const linesRequested = parseInt(lineSelect.value);
+        let output = "";
+        for (let i = 0; i < linesRequested; i++) {
+            const randomLine = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
+            output += `${(i + 1).toString().padStart(2, '0')}  ${randomLine}\n`;
         }
+        display.innerText = output;
+    }
 
-        function startTimer() {
-            if (isStarted) return;
-            isStarted = true;
-            
-            timer = setInterval(() => {
-                timeLeft--;
-                timerDisplay.innerText = timeLeft + "s";
+    function startTimer() {
+        if (isStarted) return;
+        isStarted = true;
+        timer = setInterval(() => {
+            timeLeft--;
+            timerText.innerText = `Time: ${timeLeft}s`;
+            if (timeLeft <= 0) finishTest();
+        }, 1000);
+    }
 
-                if (timeLeft <= 0) {
-                    finishTest();
-                }
-            }, 1000);
-        }
+    function finishTest() {
+        clearInterval(timer);
+        input.disabled = true; // FIX: Prevents typing after time ends
+        
+        // Calculate Stats
+        const wordsTyped = input.value.trim().split(/\s+/).length;
+        finalWpm = Math.max(0, Math.round(wordsTyped / (60 / 60)));
+        
+        // Redirect logic simulation (Switching views)
+        showResults();
+    }
 
-        // 2. FIX: Disable input and Redirect
-        function finishTest() {
-            clearInterval(timer);
-            input.disabled = true; // Stop them from typing
+    function showResults() {
+        document.getElementById('main-test').style.display = 'none';
+        document.getElementById('results-page').style.display = 'block';
+        document.getElementById('wpm-display').innerText = `${finalWpm} WPM`;
+        
+        // Simple accuracy logic
+        const rawText = display.innerText.replace(/\d+\s+/g, ''); // strip line numbers
+        const typedText = input.value;
+        document.getElementById('accuracy-display').innerText = `Lines Selected: ${lineSelect.value}`;
+    }
 
-            // Calculate simple stats
-            const words = input.value.trim().split(/\s+/).length;
-            const wpm = Math.round((words / 60) * 60); // Simple WPM calc
+    function saveAsText() {
+        const content = `--- Typing Test Results ---\nWPM: ${finalWpm}\nLines: ${lineSelect.value}\nDate: ${new Date().toLocaleString()}`;
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `typing-result-${finalWpm}wpm.txt`;
+        a.click();
+    }
 
-            // Redirect to your Vercel results page with data in URL
-            const resultsUrl = `https://website.vercel.com/results?wpm=${wpm}&lines=${lineSelect.value}`;
-            
-            // For testing purposes, we'll log it. Uncomment the line below for real use:
-            // window.location.href = resultsUrl;
-            alert("Test Over! Redirecting to results...");
-            console.log("Redirecting to: " + resultsUrl);
-        }
+    function resetTest() {
+        clearInterval(timer);
+        isStarted = false;
+        timeLeft = 60;
+        input.value = "";
+        input.disabled = false;
+        timerText.innerText = "Time: 60s";
+        generateCode();
+    }
 
-        function resetTest() {
-            clearInterval(timer);
-            isStarted = false;
-            timeLeft = 60;
-            timerDisplay.innerText = "60s";
-            input.disabled = false;
-            input.value = "";
-            generateText();
-        }
+    input.addEventListener('input', startTimer);
+    lineSelect.addEventListener('change', resetTest);
 
-        // Event Listeners
-        lineSelect.addEventListener('change', generateText);
-        input.addEventListener('input', startTimer);
+    // Init
+    generateCode();
+</script>
 
-        // Initialize
-        generateText();
-    </script>
 </body>
 </html>
