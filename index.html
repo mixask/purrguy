@@ -1,257 +1,112 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark" data-bg="mixed">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Code Speedtest</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <title>Code Typing Test</title>
     <style>
-        :root {
-            --purple: #D9CCFF;
-            --teal: #B6FFE9;
-            --trans: 0.3s ease;
-        }
-
-        /* Theme Vars */
-        [data-theme="dark"] {
-            --bg-solid: #0a0a0a;
-            --text: #ffffff;
-            --subtext: rgba(255,255,255,0.3);
-            --card: rgba(255,255,255,0.08);
-            --mix-bg: linear-gradient(135deg, #0a0a0a 0%, #1a1525 40%, #0f1a18 100%);
-        }
-
-        [data-theme="light"] {
-            --bg-solid: #ffffff;
-            --text: #1a1a1a;
-            --subtext: rgba(0,0,0,0.3);
-            --card: rgba(0,0,0,0.05);
-            --mix-bg: linear-gradient(135deg, #ffffff 0%, #f2edff 40%, #edfff9 100%);
-        }
-
-        body {
-            background: var(--bg-solid);
-            color: var(--text);
-            font-family: 'JetBrains Mono', monospace;
-            margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden;
-            transition: background var(--trans);
-        }
-
-        [data-bg="mixed"] { background: var(--mix-bg) !important; }
-
-        /* Header & Stats */
-        .header { width: 85%; margin-top: 30px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-        .stats-grid { display: flex; gap: 30px; }
-        .label { font-size: 10px; color: var(--purple); text-transform: uppercase; display: block; letter-spacing: 1px; }
-        .val { font-size: 24px; color: var(--teal); font-weight: bold; }
-
-        /* Dropdown Fix: Explicit Styling */
-        .controls { display: flex; gap: 15px; margin-top: 20px; z-index: 10; }
-        select {
-            background: var(--card);
-            border: 1px solid var(--purple);
-            color: var(--text);
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 14px;
-            outline: none;
-            appearance: auto; /* Ensures standard dropdown behavior */
-        }
-        select option { background: #1a1a1a; color: white; padding: 10px; }
-
-        /* Typing Zone */
-        #container {
-            width: 85%; margin-top: 40px; font-size: 22px; line-height: 1.6;
-            color: var(--subtext); white-space: pre-wrap; height: 50vh;
-            overflow-y: auto; position: relative; padding: 30px;
-            background: var(--card); border-radius: 20px;
-            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .correct { color: var(--teal); }
-        .incorrect { color: #ff6060; background: rgba(255, 0, 0, 0.2); border-radius: 3px; }
-        .current { border-left: 2px solid var(--teal); animation: blink 1s infinite; }
-        @keyframes blink { 50% { border-color: transparent; } }
-
-        /* Results Tab */
-        #result-modal {
-            display: none; position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); background: var(--bg-solid);
-            padding: 50px; border-radius: 25px; border: 2px solid var(--teal);
-            box-shadow: 0 0 100px rgba(0,0,0,0.8); text-align: center; z-index: 1000;
-        }
-
-        #progress { position: fixed; top: 0; left: 0; height: 5px; background: var(--teal); width: 0%; box-shadow: 0 0 15px var(--teal); }
-        #hidden-input { position: absolute; opacity: 0; pointer-events: none; }
-        .btn { background: var(--teal); color: #000; padding: 12px 30px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; font-family: inherit; }
+        body { font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 20px; }
+        #display { background: #252526; padding: 20px; border-radius: 8px; white-space: pre-wrap; margin-bottom: 20px; border: 1px solid #333; min-height: 200px; }
+        textarea { width: 100%; height: 150px; background: #2d2d2d; color: white; border: 2px solid #3e3e42; padding: 10px; font-family: monospace; font-size: 16px; }
+        textarea:disabled { opacity: 0.5; cursor: not-allowed; }
+        .controls { margin-bottom: 10px; display: flex; gap: 20px; align-items: center; }
+        #timer { font-size: 24px; color: #ce9178; font-weight: bold; }
     </style>
 </head>
-<body data-bg="mixed">
-
-    <div id="progress"></div>
-
-    <div class="header">
-        <div class="stats-grid">
-            <div><span class="label">WPM</span><span id="wpm" class="val">0</span></div>
-            <div><span class="label">Accuracy</span><span id="acc" class="val">100%</span></div>
-            <div><span class="label">Timer</span><span id="timer" class="val">0s</span></div>
-        </div>
-        <div style="display:flex; gap:10px;">
-            <button class="btn" onclick="toggleBG()" style="margin:0; padding:8px 12px; font-size:12px;">Toggle BG</button>
-            <button onclick="toggleTheme()" style="background:none; border:none; font-size: 24px; cursor:pointer;">🌓</button>
-        </div>
-    </div>
+<body>
 
     <div class="controls">
-        <select id="lang" onchange="init()">
-            <option value="lua">Lua (Roblox)</option>
-            <option value="cpp">C++</option>
-            <option value="cs">C#</option>
-            <option value="java">Java</option>
-            <option value="py">Python</option>
-        </select>
-        <select id="line-count" onchange="init()">
-            <option value="5">5 Lines</option>
+        <select id="line-select">
             <option value="15">15 Lines</option>
+            <option value="20">20 Lines</option>
             <option value="30">30 Lines</option>
         </select>
-        <select id="time-limit">
-            <option value="30">30 Seconds</option>
-            <option value="60" selected>60 Seconds</option>
-            <option value="120">120 Seconds</option>
-        </select>
+        <div id="timer">60s</div>
+        <button onclick="resetTest()">Reset</button>
     </div>
 
-    <div id="container" onclick="focusInput()">
-        <div id="display"></div>
-        <input type="text" id="hidden-input" autocomplete="off" spellcheck="false">
-    </div>
-
-    <div id="result-modal">
-        <h1 style="color:var(--purple); margin-top:0;">Test Results</h1>
-        <div id="final-stats" style="font-size: 28px; margin: 30px 0; line-height:1.5;"></div>
-        <button class="btn" onclick="init()">Restart Test (Esc)</button>
-    </div>
+    <div id="display">Loading code...</div>
+    <textarea id="typing-input" placeholder="Start typing here to begin the timer..."></textarea>
 
     <script>
-        const library = {
-            lua: `local TS = game:GetService("TweenService")\nlocal p = script.Parent\nfunction move()\n\tlocal i = TweenInfo.new(1)\n\tlocal g = {Position = Vector3.new(0,10,0)}\n\tTS:Create(p, i, g):Play()\nend\nmove()\nprint("Moving Part")`,
-            cpp: `#include <iostream>\nusing namespace std;\nint main() {\n\tint x = 10;\n\tfloat y = 5.5;\n\tcout << "Result: " << (x + y) << endl;\n\treturn 0;\n}`,
-            cs: `using System;\nclass Program {\n\tstatic void Main() {\n\t\tvar player = new Player("Hero");\n\t\tplayer.LevelUp();\n\t}\n}`,
-            java: `public class Main {\n\tpublic static void main(String[] args) {\n\t\tSystem.out.println("Coding...");\n\t\tint[] nums = {1, 2, 3};\n\t}\n}`,
-            py: `import time\ndef countdown(t):\n\twhile t > 0:\n\t\tprint(f"Time: {t}")\n\t\ttime.sleep(1)\n\t\tt -= 1\ncountdown(5)`
-        };
-
-        let activeCode = "";
-        let currentIndex = 0;
-        let startTime = null;
-        let timerInt = null;
-
         const display = document.getElementById('display');
-        const input = document.getElementById('hidden-input');
+        const input = document.getElementById('typing-input');
+        const lineSelect = document.getElementById('line-select');
+        const timerDisplay = document.getElementById('timer');
 
-        function toggleTheme() {
-            const current = document.documentElement.getAttribute('data-theme');
-            document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+        let timer;
+        let timeLeft = 60;
+        let isStarted = false;
+
+        // 1. IMPROVEMENT: More diverse code snippets
+        const codeBank = [
+            "function init() { console.log('System Online'); }",
+            "const data = fetch('api/v1/users').then(r => r.json());",
+            "if (error) { throw new Error('Operation Failed'); }",
+            "document.addEventListener('click', (e) => { e.preventDefault(); });",
+            "export default class Controller { constructor() { this.state = {}; } }",
+            "const sorted = arr.sort((a, b) => a - b);",
+            "let result = await db.collection('logs').find({}).toArray();"
+        ];
+
+        function generateText() {
+            const lineCount = parseInt(lineSelect.value);
+            let content = [];
+            // Fills the display based on chosen line count (15, 20, or 30)
+            for (let i = 0; i < lineCount; i++) {
+                let randomLine = codeBank[Math.floor(Math.random() * codeBank.length)];
+                content.push(`${i + 1}  ${randomLine}`);
+            }
+            display.innerText = content.join('\n');
         }
 
-        function toggleBG() {
-            const current = document.body.getAttribute('data-bg');
-            document.body.setAttribute('data-bg', current === 'mixed' ? 'solid' : 'mixed');
-        }
-
-        function init() {
-            clearInterval(timerInt);
-            const raw = library[document.getElementById('lang').value];
-            const maxLines = parseInt(document.getElementById('line-count').value);
+        function startTimer() {
+            if (isStarted) return;
+            isStarted = true;
             
-            const lines = raw.split('\n');
-            const start = Math.floor(Math.random() * Math.max(1, lines.length - maxLines));
-            activeCode = lines.slice(start, start + maxLines).join('\n');
+            timer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.innerText = timeLeft + "s";
 
-            currentIndex = 0;
-            startTime = null;
+                if (timeLeft <= 0) {
+                    finishTest();
+                }
+            }, 1000);
+        }
+
+        // 2. FIX: Disable input and Redirect
+        function finishTest() {
+            clearInterval(timer);
+            input.disabled = true; // Stop them from typing
+
+            // Calculate simple stats
+            const words = input.value.trim().split(/\s+/).length;
+            const wpm = Math.round((words / 60) * 60); // Simple WPM calc
+
+            // Redirect to your Vercel results page with data in URL
+            const resultsUrl = `https://website.vercel.com/results?wpm=${wpm}&lines=${lineSelect.value}`;
+            
+            // For testing purposes, we'll log it. Uncomment the line below for real use:
+            // window.location.href = resultsUrl;
+            alert("Test Over! Redirecting to results...");
+            console.log("Redirecting to: " + resultsUrl);
+        }
+
+        function resetTest() {
+            clearInterval(timer);
+            isStarted = false;
+            timeLeft = 60;
+            timerDisplay.innerText = "60s";
+            input.disabled = false;
             input.value = "";
-            document.getElementById('wpm').innerText = "0";
-            document.getElementById('acc').innerText = "100%";
-            document.getElementById('timer').innerText = "0s";
-            document.getElementById('progress').style.width = "0%";
-            document.getElementById('result-modal').style.display = 'none';
-            render();
-            input.focus();
+            generateText();
         }
 
-        function render() {
-            display.innerHTML = "";
-            activeCode.split('').forEach((char, i) => {
-                const span = document.createElement('span');
-                span.innerText = char;
-                span.className = (i === 0) ? 'current' : '';
-                display.appendChild(span);
-            });
-        }
+        // Event Listeners
+        lineSelect.addEventListener('change', generateText);
+        input.addEventListener('input', startTimer);
 
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') init();
-            if (e.key === 'Tab') {
-                e.preventDefault(); // Fix for Tab key focus issue
-                if (activeCode[currentIndex] === '\t') {
-                    input.value += '\t';
-                    handleInput();
-                }
-            }
-        });
-
-        input.addEventListener('input', handleInput);
-
-        function handleInput() {
-            if (!startTime && input.value.length > 0) {
-                startTime = Date.now();
-                const limit = parseInt(document.getElementById('time-limit').value);
-                timerInt = setInterval(() => {
-                    const now = Math.floor((Date.now() - startTime) / 1000);
-                    document.getElementById('timer').innerText = now + "s";
-                    if (now >= limit) finish();
-                }, 1000);
-            }
-
-            const val = input.value;
-            currentIndex = val.length;
-            const spans = display.querySelectorAll('span');
-            let errs = 0;
-
-            spans.forEach((span, i) => {
-                span.className = "";
-                if (i < val.length) {
-                    if (val[i] === activeCode[i]) span.classList.add('correct');
-                    else { span.classList.add('incorrect'); errs++; }
-                }
-                if (i === currentIndex) span.classList.add('current');
-            });
-
-            const elapsed = (Date.now() - startTime) / 60000;
-            if (elapsed > 0 && currentIndex > 2) {
-                const wpm = Math.round((currentIndex / 5) / elapsed);
-                document.getElementById('wpm').innerText = Math.min(wpm, 600);
-                const acc = Math.round(((currentIndex - errs) / currentIndex) * 100);
-                document.getElementById('acc').innerText = acc + "%";
-            }
-
-            document.getElementById('progress').style.width = (currentIndex / activeCode.length * 100) + "%";
-            if (val.length >= activeCode.length) finish();
-        }
-
-        function finish() {
-            clearInterval(timerInt);
-            document.getElementById('result-modal').style.display = 'block';
-            document.getElementById('final-stats').innerHTML = `WPM: <span style="color:var(--teal)">${document.getElementById('wpm').innerText}</span><br>Accuracy: <span style="color:var(--purple)">${document.getElementById('acc').innerText}</span>`;
-        }
-
-        function focusInput() { input.focus(); }
-        window.addEventListener('click', focusInput);
-        init();
+        // Initialize
+        generateText();
     </script>
 </body>
 </html>
