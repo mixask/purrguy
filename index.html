@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MonkeyCode | Minimalist Coding Test</title>
+    <title>MonkeyCode | Multi-Lang Edition</title>
     <style>
         :root {
             --bg-color: #323437;
             --main-color: #e2b714;
-            --caret-color: #e2b714;
             --sub-color: #646669;
             --text-color: #d1d0c5;
             --error-color: #ca4754;
@@ -17,67 +16,67 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: 'Fira Code', 'Roboto Mono', monospace;
+            font-family: 'Fira Code', 'Courier New', monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            overflow: hidden;
+            transition: 0.3s;
         }
 
-        /* Top Navigation Bar */
+        /* Config Bar Styling */
         .config-bar {
             display: flex;
-            gap: 20px;
-            background: rgba(0,0,0,0.1);
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 14px;
+            gap: 25px;
             color: var(--sub-color);
             margin-bottom: 40px;
-        }
-
-        .config-group span { cursor: pointer; transition: 0.2s; }
-        .config-group span:hover, .config-group span.active { color: var(--text-color); }
-        .config-group b { color: var(--main-color); margin-right: 5px; }
-
-        /* Typing Area */
-        #test-container {
-            width: 90%;
-            max-width: 1000px;
-            position: relative;
-        }
-
-        #display-text {
-            font-size: 24px;
-            line-height: 1.5;
-            color: var(--sub-color);
-            word-break: break-all;
+            font-size: 14px;
             user-select: none;
         }
 
-        .letter { position: relative; }
+        .config-group { display: flex; gap: 12px; align-items: center; }
+        .config-group b { color: var(--main-color); text-transform: lowercase; }
+        .opt { cursor: pointer; transition: 0.2s; }
+        .opt:hover, .opt.active { color: var(--text-color); }
+        .opt.active { color: var(--main-color); }
+
+        /* Test Area */
+        #test-container {
+            width: 85%;
+            max-width: 1000px;
+            position: relative;
+            outline: none;
+        }
+
+        #display-text {
+            font-size: 22px;
+            line-height: 1.6;
+            color: var(--sub-color);
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .letter { position: relative; border-left: 2px solid transparent; }
+        .letter.active { border-left-color: var(--main-color); animation: blink 1s infinite; }
         .letter.correct { color: var(--text-color); }
-        .letter.incorrect { color: var(--error-color); border-bottom: 2px solid var(--error-color); }
+        .letter.incorrect { color: var(--error-color); }
         
         #hidden-input {
             position: absolute;
+            top: 0; left: 0;
             opacity: 0;
-            cursor: default;
+            pointer-events: none;
         }
 
-        /* Results Screen */
-        #results-screen {
-            display: none;
-            text-align: left;
-            animation: fadeIn 0.4s ease;
-        }
+        /* Results Display */
+        #results-screen { display: none; text-align: left; max-width: 400px; }
+        .stat-box { margin-bottom: 20px; }
+        .stat-val { font-size: 4rem; color: var(--main-color); margin: 0; line-height: 1; }
+        .stat-label { color: var(--sub-color); font-size: 1.2rem; }
 
-        .stat-large { font-size: 64px; color: var(--main-color); margin: 0; }
-        .stat-label { color: var(--sub-color); font-size: 18px; }
-
+        .btn-row { display: flex; gap: 15px; margin-top: 30px; }
         .btn {
             background: none;
             border: 1px solid var(--sub-color);
@@ -85,56 +84,67 @@
             padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 20px;
+            font-family: inherit;
         }
         .btn:hover { background: var(--sub-color); color: var(--bg-color); }
+        .btn.primary { border-color: var(--main-color); color: var(--main-color); }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes blink { 50% { border-left-color: transparent; } }
     </style>
 </head>
 <body>
 
-    <div class="config-bar" id="config">
-        <div class="config-group">
-            <b>language</b>
-            <span class="lang-opt active" data-lang="js">javascript</span>
-            <span class="lang-opt" data-lang="py">python</span>
-            <span class="lang-opt" data-lang="cpp">c++</span>
+    <div class="config-bar" id="menu">
+        <div class="config-group" id="lang-menu">
+            <b>type</b>
+            <span class="opt active" data-lang="en">english</span>
+            <span class="opt" data-lang="ru">russian</span>
+            <span class="opt" data-lang="js">javascript</span>
+            <span class="opt" data-lang="lua">lua</span>
+            <span class="opt" data-lang="py">python</span>
         </div>
-        <div class="config-group">
-            <b>lines</b>
-            <span class="line-opt" data-val="15">15</span>
-            <span class="line-opt active" data-val="20">20</span>
-            <span class="line-opt" data-val="30">30</span>
+        <div class="config-group" id="line-menu">
+            <b>amount</b>
+            <span class="opt" data-val="15">15</span>
+            <span class="opt active" data-val="20">20</span>
+            <span class="opt" data-val="30">30</span>
         </div>
         <div class="config-group">
             <b>time</b>
-            <span id="timer-display" style="color: var(--main-color);">60</span>
+            <span id="timer" style="color: var(--main-color)">60</span>
         </div>
     </div>
 
     <div id="test-container">
-        <input type="text" id="hidden-input" autofocus>
+        <textarea id="hidden-input" spellcheck="false" autocomplete="off"></textarea>
         <div id="display-text"></div>
     </div>
 
     <div id="results-screen">
-        <p class="stat-label">wpm</p>
-        <h1 class="stat-large" id="res-wpm">0</h1>
-        <p class="stat-label">accuracy</p>
-        <h1 class="stat-large" id="res-acc" style="font-size: 32px;">0%</h1>
-        <button class="btn" onclick="location.reload()">restart</button>
-        <button class="btn" onclick="exportResults()">save .txt</button>
+        <div class="stat-box">
+            <p class="stat-label">wpm</p>
+            <h1 class="stat-val" id="res-wpm">0</h1>
+        </div>
+        <div class="stat-box">
+            <p class="stat-label">accuracy</p>
+            <h1 class="stat-val" id="res-acc" style="font-size: 2rem;">0%</h1>
+        </div>
+        <div class="btn-row">
+            <button class="btn primary" onclick="location.reload()">restart test</button>
+            <button class="btn" onclick="saveAsTxt()">save results</button>
+        </div>
     </div>
 
 <script>
-    const languages = {
-        js: ["const x = 10;", "console.log('hello');", "function init() {", "return a + b;", "if (items.length > 0) {", "export default class {", "await fetch(url);"],
-        py: ["def main():", "print(f'Hello {name}')", "if __name__ == '__main__':", "items = [1, 2, 3]", "return sum(numbers)", "for i in range(10):"],
-        cpp: ["#include <iostream>", "std::cout << 'Hi';", "int main() {", "using namespace std;", "vector<int> v;", "return 0;"]
+    const contentPool = {
+        en: ["The quick brown fox jumps over the lazy dog.", "Success is not final, failure is not fatal.", "Life is what happens when you're busy making other plans."],
+        ru: ["Съешь же ещё этих мягких французских булок, да выпей чаю.", "В чащах юга жил бы цитрус, но фальшивый экземпляр.", "Я помню чудное мгновенье: передо мной явилась ты."],
+        js: ["function init() {\n\tconsole.log('started');\n}", "const result = arr.map(x => x * 2);", "export default async function main() {\n\tawait run();\n}"],
+        lua: ["local function greet(name)\n\tprint('Hello ' .. name)\nend", "if health <= 0 then\n\tprint('Game Over')\nend", "for i=1, 10 do\n\ttable.insert(t, i)\nend"],
+        py: ["def calculate_area(r):\n\treturn 3.14 * r**2", "if __name__ == '__main__':\n\tmain()", "items = [x for x in range(10) if x % 2 == 0]"]
     };
 
-    let activeLang = 'js';
+    let activeLang = 'en';
     let lineCount = 20;
     let timeLeft = 60;
     let timer = null;
@@ -144,50 +154,83 @@
 
     const display = document.getElementById('display-text');
     const input = document.getElementById('hidden-input');
-    const timerDisplay = document.getElementById('timer-display');
+    const timerDisplay = document.getElementById('timer');
 
-    // Initialize Test
     function setupTest() {
         display.innerHTML = '';
-        let fullText = "";
-        for(let i=0; i < lineCount; i++) {
-            let pool = languages[activeLang];
-            fullText += pool[Math.floor(Math.random() * pool.length)] + " ";
-        }
+        input.value = '';
+        charIndex = 0;
+        mistakes = 0;
         
-        fullText.split('').forEach(char => {
+        let rawContent = "";
+        for(let i=0; i < lineCount; i++) {
+            let pool = contentPool[activeLang];
+            rawContent += pool[Math.floor(Math.random() * pool.length)] + (activeLang.length > 2 ? "\n" : " ");
+        }
+
+        rawContent.split('').forEach((char, i) => {
             const span = document.createElement('span');
-            span.innerText = char;
+            if (char === '\n') {
+                span.innerHTML = '↵\n';
+            } else if (char === '\t') {
+                span.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;';
+            } else {
+                span.innerText = char;
+            }
             span.classList.add('letter');
+            if(i === 0) span.classList.add('active');
             display.appendChild(span);
         });
     }
 
-    // Input Handling
-    input.addEventListener('input', (e) => {
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const start = input.selectionStart;
+            input.value = input.value.substring(0, start) + "\t" + input.value.substring(input.selectionEnd);
+            input.selectionStart = input.selectionEnd = start + 1;
+            handleInput();
+        }
+    });
+
+    input.addEventListener('input', handleInput);
+
+    function handleInput() {
         if (!isStarted) startTimer();
         
         const chars = display.querySelectorAll('.letter');
-        const typedChar = input.value.split('')[charIndex];
+        const typedValue = input.value;
 
-        if (typedChar == null) { // Backspace
-            if (charIndex > 0) {
-                charIndex--;
-                chars[charIndex].classList.remove('correct', 'incorrect');
-            }
-        } else {
-            if (typedChar === chars[charIndex].innerText) {
-                chars[charIndex].classList.add('correct');
-            } else {
-                chars[charIndex].classList.add('incorrect');
-                mistakes++;
-            }
-            charIndex++;
+        // Check if backspaced
+        if (typedValue.length < charIndex) {
+            chars[charIndex].classList.remove('active', 'correct', 'incorrect');
+            charIndex--;
+            chars[charIndex].classList.add('active');
+            chars[charIndex].classList.remove('correct', 'incorrect');
+            return;
         }
 
-        // Auto-end if text finished
-        if (charIndex === chars.length) endTest();
-    });
+        const currentChar = chars[charIndex];
+        const lastTyped = typedValue[charIndex];
+        
+        // Normalize comparison for special chars
+        const expected = currentChar.innerText.includes('↵') ? '\n' : (currentChar.innerText === '' ? '\t' : currentChar.innerText);
+
+        currentChar.classList.remove('active');
+        if (lastTyped === expected) {
+            currentChar.classList.add('correct');
+        } else {
+            currentChar.classList.add('incorrect');
+            mistakes++;
+        }
+
+        charIndex++;
+        if (chars[charIndex]) {
+            chars[charIndex].classList.add('active');
+        } else {
+            endTest();
+        }
+    }
 
     function startTimer() {
         isStarted = true;
@@ -200,50 +243,44 @@
 
     function endTest() {
         clearInterval(timer);
-        input.disabled = true; // LOCK INPUT
+        input.disabled = true;
         
-        const wpm = Math.round((charIndex / 5) / ( (60 - timeLeft) / 60 ));
-        const acc = Math.round(((charIndex - mistakes) / charIndex) * 100);
+        // Calculate WPM & Accuracy
+        const wpm = Math.round((charIndex / 5) / ((60 - timeLeft) / 60)) || 0;
+        const acc = charIndex > 0 ? Math.round(((charIndex - mistakes) / charIndex) * 100) : 0;
 
+        document.getElementById('menu').style.display = 'none';
         document.getElementById('test-container').style.display = 'none';
-        document.getElementById('config').style.display = 'none';
         document.getElementById('results-screen').style.display = 'block';
         
-        document.getElementById('res-wpm').innerText = isNaN(wpm) ? 0 : wpm;
-        document.getElementById('res-acc').innerText = (acc < 0 ? 0 : acc) + "%";
+        document.getElementById('res-wpm').innerText = wpm;
+        document.getElementById('res-acc').innerText = acc + "%";
     }
 
-    function exportResults() {
-        const data = `MonkeyCode Result\nWPM: ${document.getElementById('res-wpm').innerText}\nAccuracy: ${document.getElementById('res-acc').innerText}`;
-        const blob = new Blob([data], {type: 'text/plain'});
+    function saveAsTxt() {
+        const text = `MonkeyCode Results\nType: ${activeLang}\nWPM: ${document.getElementById('res-wpm').innerText}\nAccuracy: ${document.getElementById('res-acc').innerText}`;
+        const blob = new Blob([text], {type: 'text/plain'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'results.txt';
+        a.download = 'typing-results.txt';
         a.click();
     }
 
-    // Language/Line Switching Logic
-    document.querySelectorAll('.lang-opt').forEach(opt => {
+    // Settings Listeners
+    document.querySelectorAll('.opt').forEach(opt => {
         opt.onclick = () => {
-            document.querySelectorAll('.lang-opt').forEach(o => o.classList.remove('active'));
+            const group = opt.parentElement;
+            group.querySelectorAll('.opt').forEach(o => o.classList.remove('active'));
             opt.classList.add('active');
-            activeLang = opt.dataset.lang;
+            
+            if(group.id === 'lang-menu') activeLang = opt.dataset.lang;
+            if(group.id === 'line-menu') lineCount = parseInt(opt.dataset.val);
+            
             setupTest();
         };
     });
 
-    document.querySelectorAll('.line-opt').forEach(opt => {
-        opt.onclick = () => {
-            document.querySelectorAll('.line-opt').forEach(o => o.classList.remove('active'));
-            opt.classList.add('active');
-            lineCount = parseInt(opt.dataset.val);
-            setupTest();
-        };
-    });
-
-    // Clicking anywhere focuses the input
     document.addEventListener('click', () => input.focus());
-
     setupTest();
 </script>
 </body>
