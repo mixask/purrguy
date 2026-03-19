@@ -17,28 +17,38 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: 'Fira Code', monospace;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Central Container */
+        .main-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            padding: 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            overflow-x: hidden;
+            text-align: center;
         }
 
-        /* Config Bar */
+        /* Config Bar - Centered and Styled */
         .config-bar {
             display: flex;
             gap: 30px;
             color: var(--sub-color);
-            margin-bottom: 30px;
+            margin-bottom: 60px;
             font-size: 14px;
-            background: rgba(0,0,0,0.1);
-            padding: 10px 25px;
-            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 12px 30px;
+            border-radius: 12px;
             user-select: none;
-            flex-wrap: wrap;
-            justify-content: center;
+            backdrop-filter: blur(5px);
         }
 
         .config-group { display: flex; gap: 12px; align-items: center; }
@@ -49,24 +59,26 @@
 
         /* Test Area */
         #test-container {
-            width: 85%;
-            max-width: 1000px;
+            width: 100%;
             position: relative;
+            min-height: 200px;
         }
 
         #display-text {
-            font-size: 20px;
+            font-size: 22px;
             line-height: 1.6;
             color: var(--sub-color);
             white-space: pre-wrap;
             word-break: break-word;
-            text-align: justify;
+            text-align: left; /* Kept left for readability while centered in container */
+            max-height: 50vh;
+            overflow-y: hidden;
         }
 
         .letter { position: relative; border-left: 2px solid transparent; }
         .letter.active { border-left-color: var(--main-color); animation: blink 1s infinite; }
         .letter.correct { color: var(--text-color); }
-        .letter.incorrect { color: var(--error-color); background: rgba(202, 71, 84, 0.2); }
+        .letter.incorrect { color: var(--error-color); background: rgba(202, 71, 84, 0.1); }
         
         #hidden-input {
             position: absolute;
@@ -76,75 +88,85 @@
         }
 
         /* Results Display */
-        #results-screen { display: none; text-align: center; animation: fadeIn 0.5s ease; }
-        .stat-val { font-size: 5rem; color: var(--main-color); margin: 0; line-height: 1; }
-        .stat-label { color: var(--sub-color); font-size: 1.2rem; margin-bottom: 20px; }
+        #results-screen { 
+            display: none; 
+            animation: fadeIn 0.4s ease forwards; 
+        }
+        
+        .stat-val { font-size: 6rem; color: var(--main-color); margin: 0; line-height: 1; }
+        .stat-label { color: var(--sub-color); font-size: 1.2rem; margin-bottom: 20px; text-transform: lowercase; }
 
-        .btn-row { display: flex; gap: 15px; margin-top: 40px; justify-content: center; }
+        .btn-row { display: flex; gap: 20px; margin-top: 50px; justify-content: center; }
         .btn {
             background: none;
             border: 1px solid var(--sub-color);
             color: var(--sub-color);
-            padding: 12px 24px;
-            border-radius: 6px;
+            padding: 14px 28px;
+            border-radius: 8px;
             cursor: pointer;
             font-family: inherit;
+            font-size: 1rem;
+            transition: 0.3s;
         }
         .btn:hover { background: var(--text-color); color: var(--bg-color); border-color: var(--text-color); }
 
         @keyframes blink { 50% { border-left-color: transparent; } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
 
-    <div class="config-bar" id="menu">
-        <div class="config-group" id="lang-menu">
-            <b>type</b>
-            <span class="opt active" data-lang="en">english</span>
-            <span class="opt" data-lang="ru">russian</span>
-            <span class="opt" data-lang="js">javascript</span>
-            <span class="opt" data-lang="py">python</span>
-            <span class="opt" data-lang="cpp">c++</span>
+    <div class="main-wrapper">
+        <div class="config-bar" id="menu">
+            <div class="config-group" id="lang-menu">
+                <b>type</b>
+                <span class="opt active" data-lang="en">english</span>
+                <span class="opt" data-lang="ru">russian</span>
+                <span class="opt" data-lang="js">javascript</span>
+                <span class="opt" data-lang="py">python</span>
+            </div>
+            <div class="config-group" id="line-menu">
+                <b>density</b>
+                <span class="opt active" data-val="15">low</span>
+                <span class="opt" data-val="30">med</span>
+                <span class="opt" data-val="50">high</span>
+            </div>
+            <div class="config-group" id="time-menu">
+                <b>time</b>
+                <span class="opt" data-time="15">15</span>
+                <span class="opt" data-time="30">30</span>
+                <span class="opt active" data-time="60">60</span>
+            </div>
         </div>
-        <div class="config-group" id="line-menu">
-            <b>density</b>
-            <span class="opt active" data-val="15">low</span>
-            <span class="opt" data-val="30">med</span>
-            <span class="opt" data-val="50">high</span>
-        </div>
-        <div class="config-group" id="time-menu">
-            <b>time</b>
-            <span class="opt" data-time="15">15</span>
-            <span class="opt" data-time="30">30</span>
-            <span class="opt active" data-time="60">60</span>
-        </div>
-    </div>
 
-    <div id="test-container">
-        <div id="timer-live" style="color: var(--main-color); font-size: 1.5rem; margin-bottom: 10px; visibility: hidden;">60</div>
-        <textarea id="hidden-input" spellcheck="false" autocomplete="off"></textarea>
-        <div id="display-text"></div>
-    </div>
+        <div id="test-container">
+            <div id="timer-live" style="color: var(--main-color); font-size: 1.8rem; margin-bottom: 20px; height: 30px; visibility: hidden;">60</div>
+            <textarea id="hidden-input" spellcheck="false" autocomplete="off"></textarea>
+            <div id="display-text"></div>
+        </div>
 
-    <div id="results-screen">
-        <p class="stat-label">wpm</p>
-        <h1 class="stat-val" id="res-wpm">0</h1>
-        <p class="stat-label">accuracy</p>
-        <h1 class="stat-val" id="res-acc" style="font-size: 2.5rem;">0%</h1>
-        <div class="btn-row">
-            <button class="btn" onclick="location.reload()">restart</button>
-            <button class="btn" onclick="saveAsTxt()">save results</button>
+        <div id="results-screen">
+            <div>
+                <p class="stat-label">wpm</p>
+                <h1 class="stat-val" id="res-wpm">0</h1>
+            </div>
+            <div style="margin-top: 20px;">
+                <p class="stat-label">accuracy</p>
+                <h1 class="stat-val" id="res-acc" style="font-size: 3rem;">0%</h1>
+            </div>
+            <div class="btn-row">
+                <button class="btn" onclick="location.reload()">restart test</button>
+                <button class="btn" onclick="saveAsTxt()">save results</button>
+            </div>
         </div>
     </div>
 
 <script>
     const contentPool = {
-        en: ["The quick brown fox jumps over the lazy dog.", "Success is not final, failure is not fatal.", "In the middle of every difficulty lies opportunity.", "Life is what happens when you are busy making other plans.", "Simplicity is the ultimate sophistication.", "To be or not to be, that is the question.", "The only way to do great work is to love what you do."],
-        ru: ["Съешь же ещё этих мягких французских булок, да выпей чаю.", "Программирование открывает новые горизонты.", "Спеши медленно, и ты достигнешь цели быстрее.", "Москва не сразу строилась, так и код пишется постепенно.", "Терпение и труд всё перетрут.", "Зима близко, но код должен работать."],
-        js: ["const data = await response.json();", "Array.from({length: 10}, (_, i) => i);", "export default function App() { return <div></div> }", "document.addEventListener('click', (e) => console.log(e));", "const sum = (a, b) => a + b;", "process.nextTick(() => { runTask(); });"],
-        py: ["def main():\n    print('Hello World')", "items = [x for x in range(100) if x % 2 == 0]", "import pandas as pd\ndf = pd.read_csv('data.csv')", "with open('file.txt', 'r') as f:\n    content = f.read()", "class User(models.Model):\n    name = models.CharField(max_length=100)"],
-        cpp: ["#include <iostream>\nusing namespace std;", "int main() {\n    std::cout << 'Hello';\n    return 0;\n}", "std::vector<int> v = {1, 2, 3};", "for(int i=0; i<n; ++i) {\n    sum += arr[i];\n}", "auto result = std::find(v.begin(), v.end(), 5);"]
+        en: ["Focus on the journey, not the destination.", "Clean code always looks like it was written by someone who cares.", "The best way to predict the future is to invent it.", "Software is a great combination between artistry and engineering.", "Simplicity is the soul of efficiency.", "Talk is cheap. Show me the code.", "Stay hungry, stay foolish."],
+        ru: ["Программирование — это способ думать о вещах.", "Код должен быть понятен человеку, а не только машине.", "Семь раз отмерь, один раз отрежь.", "Ученье — свет, а неученье — тьма.", "Сложность — это враг надежности.", "Пишите код так, будто сопровождать его будет маньяк-психопат."],
+        js: ["const root = ReactDOM.createRoot(document.getElementById('root'));", "app.get('/', (req, res) => res.send('Hello World'));", "const result = data.filter(item => item.active).map(i => i.id);", "async function fetchData() { const res = await fetch(url); }", "setTimeout(() => { window.location.reload(); }, 1000);"],
+        py: ["def calculate_bmi(weight, height):\n    return weight / (height ** 2)", "print(f'Hello, {user_name}!')", "list_comp = [x for x in data if x > 10]", "import matplotlib.pyplot as plt\nplt.plot(x, y)\nplt.show()", "with open('config.json') as file:\n    data = json.load(file)"]
     };
 
     let activeLang = 'en', lineCount = 15, maxTime = 60, timeLeft = 60;
@@ -166,7 +188,6 @@
         timerLive.style.visibility = 'hidden';
         
         let rawContent = "";
-        // Multiplying lineCount to fill the screen (approx 50-60 sentences)
         let totalPhrases = activeLang.length > 2 ? lineCount : lineCount * 4; 
 
         for(let i=0; i < totalPhrases; i++) {
@@ -192,7 +213,6 @@
         const chars = display.querySelectorAll('.letter');
         const typedVal = input.value;
         
-        // Handle Backspace
         if (typedVal.length < charIndex) {
             chars[charIndex].classList.remove('active', 'correct', 'incorrect');
             charIndex = typedVal.length;
@@ -216,8 +236,6 @@
         charIndex++;
         if (chars[charIndex]) {
             chars[charIndex].classList.add('active');
-            // Auto-scroll logic if needed
-            chars[charIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else {
             endTest();
         }
@@ -251,10 +269,8 @@
     function saveAsTxt() {
         const text = `MonkeyCode Results\nWPM: ${document.getElementById('res-wpm').innerText}\nAccuracy: ${document.getElementById('res-acc').innerText}`;
         const blob = new Blob([text], {type: 'text/plain'});
-        const a = document.createElement('a'); 
-        a.href = URL.createObjectURL(blob);
-        a.download = 'typing_results.txt'; 
-        a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = 'score.txt'; a.click();
     }
 
     document.querySelectorAll('.opt').forEach(opt => {
