@@ -23,7 +23,7 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            transition: opacity 0.3s;
+            overflow-x: hidden;
         }
 
         /* Config Bar */
@@ -31,12 +31,14 @@
             display: flex;
             gap: 30px;
             color: var(--sub-color);
-            margin-bottom: 50px;
+            margin-bottom: 30px;
             font-size: 14px;
             background: rgba(0,0,0,0.1);
             padding: 10px 25px;
             border-radius: 10px;
             user-select: none;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .config-group { display: flex; gap: 12px; align-items: center; }
@@ -53,17 +55,18 @@
         }
 
         #display-text {
-            font-size: 24px;
-            line-height: 1.5;
+            font-size: 20px;
+            line-height: 1.6;
             color: var(--sub-color);
             white-space: pre-wrap;
-            word-break: break-all;
+            word-break: break-word;
+            text-align: justify;
         }
 
         .letter { position: relative; border-left: 2px solid transparent; }
         .letter.active { border-left-color: var(--main-color); animation: blink 1s infinite; }
         .letter.correct { color: var(--text-color); }
-        .letter.incorrect { color: var(--error-color); }
+        .letter.incorrect { color: var(--error-color); background: rgba(202, 71, 84, 0.2); }
         
         #hidden-input {
             position: absolute;
@@ -73,11 +76,11 @@
         }
 
         /* Results Display */
-        #results-screen { display: none; text-align: left; animation: fadeIn 0.5s ease; }
+        #results-screen { display: none; text-align: center; animation: fadeIn 0.5s ease; }
         .stat-val { font-size: 5rem; color: var(--main-color); margin: 0; line-height: 1; }
-        .stat-label { color: var(--sub-color); font-size: 1.2rem; margin-bottom: 30px; }
+        .stat-label { color: var(--sub-color); font-size: 1.2rem; margin-bottom: 20px; }
 
-        .btn-row { display: flex; gap: 15px; margin-top: 40px; }
+        .btn-row { display: flex; gap: 15px; margin-top: 40px; justify-content: center; }
         .btn {
             background: none;
             border: 1px solid var(--sub-color);
@@ -86,7 +89,6 @@
             border-radius: 6px;
             cursor: pointer;
             font-family: inherit;
-            font-weight: bold;
         }
         .btn:hover { background: var(--text-color); color: var(--bg-color); border-color: var(--text-color); }
 
@@ -102,20 +104,20 @@
             <span class="opt active" data-lang="en">english</span>
             <span class="opt" data-lang="ru">russian</span>
             <span class="opt" data-lang="js">javascript</span>
-            <span class="opt" data-lang="lua">lua</span>
+            <span class="opt" data-lang="py">python</span>
+            <span class="opt" data-lang="cpp">c++</span>
         </div>
         <div class="config-group" id="line-menu">
-            <b>amount</b>
-            <span class="opt" data-val="15">15</span>
-            <span class="opt active" data-val="20">20</span>
-            <span class="opt" data-val="30">30</span>
+            <b>density</b>
+            <span class="opt active" data-val="15">low</span>
+            <span class="opt" data-val="30">med</span>
+            <span class="opt" data-val="50">high</span>
         </div>
         <div class="config-group" id="time-menu">
             <b>time</b>
             <span class="opt" data-time="15">15</span>
             <span class="opt" data-time="30">30</span>
             <span class="opt active" data-time="60">60</span>
-            <span class="opt" data-time="120">120</span>
         </div>
     </div>
 
@@ -130,22 +132,22 @@
         <h1 class="stat-val" id="res-wpm">0</h1>
         <p class="stat-label">accuracy</p>
         <h1 class="stat-val" id="res-acc" style="font-size: 2.5rem;">0%</h1>
-        
         <div class="btn-row">
-            <button class="btn" onclick="location.reload()">restart test</button>
+            <button class="btn" onclick="location.reload()">restart</button>
             <button class="btn" onclick="saveAsTxt()">save results</button>
         </div>
     </div>
 
 <script>
     const contentPool = {
-        en: ["The sun sets behind the mountains.", "Coding is the art of logical thinking.", "Practice makes perfect in every craft."],
-        ru: ["Программирование — это искусство.", "Быстрая бурая лиса прыгает через собаку.", "Москва — столица нашей родины."],
-        js: ["function start() {\n\treturn true;\n}", "const items = [1, 2, 3];", "if (active) {\n\tconsole.log('run');\n}"],
-        lua: ["local x = 5\nprint(x * 10)", "if player.health == 0 then\n\tdie()\nend", "for i=1, #list do\n\tprint(i)\nend"]
+        en: ["The quick brown fox jumps over the lazy dog.", "Success is not final, failure is not fatal.", "In the middle of every difficulty lies opportunity.", "Life is what happens when you are busy making other plans.", "Simplicity is the ultimate sophistication.", "To be or not to be, that is the question.", "The only way to do great work is to love what you do."],
+        ru: ["Съешь же ещё этих мягких французских булок, да выпей чаю.", "Программирование открывает новые горизонты.", "Спеши медленно, и ты достигнешь цели быстрее.", "Москва не сразу строилась, так и код пишется постепенно.", "Терпение и труд всё перетрут.", "Зима близко, но код должен работать."],
+        js: ["const data = await response.json();", "Array.from({length: 10}, (_, i) => i);", "export default function App() { return <div></div> }", "document.addEventListener('click', (e) => console.log(e));", "const sum = (a, b) => a + b;", "process.nextTick(() => { runTask(); });"],
+        py: ["def main():\n    print('Hello World')", "items = [x for x in range(100) if x % 2 == 0]", "import pandas as pd\ndf = pd.read_csv('data.csv')", "with open('file.txt', 'r') as f:\n    content = f.read()", "class User(models.Model):\n    name = models.CharField(max_length=100)"],
+        cpp: ["#include <iostream>\nusing namespace std;", "int main() {\n    std::cout << 'Hello';\n    return 0;\n}", "std::vector<int> v = {1, 2, 3};", "for(int i=0; i<n; ++i) {\n    sum += arr[i];\n}", "auto result = std::find(v.begin(), v.end(), 5);"]
     };
 
-    let activeLang = 'en', lineCount = 20, maxTime = 60, timeLeft = 60;
+    let activeLang = 'en', lineCount = 15, maxTime = 60, timeLeft = 60;
     let timer = null, isStarted = false, charIndex = 0, mistakes = 0;
 
     const display = document.getElementById('display-text');
@@ -157,14 +159,20 @@
         input.value = '';
         charIndex = 0;
         mistakes = 0;
+        isStarted = false;
+        clearInterval(timer);
         timeLeft = maxTime;
         timerLive.innerText = timeLeft;
         timerLive.style.visibility = 'hidden';
         
         let rawContent = "";
-        for(let i=0; i < lineCount; i++) {
+        // Multiplying lineCount to fill the screen (approx 50-60 sentences)
+        let totalPhrases = activeLang.length > 2 ? lineCount : lineCount * 4; 
+
+        for(let i=0; i < totalPhrases; i++) {
             let pool = contentPool[activeLang];
-            rawContent += pool[Math.floor(Math.random() * pool.length)] + (activeLang.length > 2 ? "\n" : " ");
+            let phrase = pool[Math.floor(Math.random() * pool.length)];
+            rawContent += phrase + (activeLang.length > 2 ? "\n\n" : " ");
         }
 
         rawContent.split('').forEach((char, i) => {
@@ -178,40 +186,42 @@
         });
     }
 
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Tab') {
-            e.preventDefault();
-            input.value += "\t";
-            handleInput();
-        }
-    });
-
-    input.addEventListener('input', handleInput);
-
-    function handleInput() {
+    input.addEventListener('input', () => {
         if (!isStarted) startTimer();
         
         const chars = display.querySelectorAll('.letter');
-        if (input.value.length < charIndex) {
+        const typedVal = input.value;
+        
+        // Handle Backspace
+        if (typedVal.length < charIndex) {
             chars[charIndex].classList.remove('active', 'correct', 'incorrect');
-            charIndex--;
+            charIndex = typedVal.length;
             chars[charIndex].classList.add('active');
             chars[charIndex].classList.remove('correct', 'incorrect');
             return;
         }
 
         const currentChar = chars[charIndex];
-        const lastTyped = input.value[charIndex];
+        const lastTyped = typedVal[charIndex];
         const expected = currentChar.innerText.includes('↵') ? '\n' : (currentChar.innerText === '' ? '\t' : currentChar.innerText);
 
         currentChar.classList.remove('active');
-        if (lastTyped === expected) currentChar.classList.add('correct');
-        else { currentChar.classList.add('incorrect'); mistakes++; }
+        if (lastTyped === expected) {
+            currentChar.classList.add('correct');
+        } else {
+            currentChar.classList.add('incorrect');
+            mistakes++;
+        }
 
         charIndex++;
-        if (chars[charIndex]) chars[charIndex].classList.add('active');
-        else endTest();
-    }
+        if (chars[charIndex]) {
+            chars[charIndex].classList.add('active');
+            // Auto-scroll logic if needed
+            chars[charIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            endTest();
+        }
+    });
 
     function startTimer() {
         isStarted = true;
@@ -226,9 +236,8 @@
     function endTest() {
         clearInterval(timer);
         input.disabled = true;
-        
-        const timeSpent = maxTime - timeLeft;
-        const wpm = Math.round((charIndex / 5) / (timeSpent / 60)) || 0;
+        const timeSpent = Math.max(1, maxTime - timeLeft);
+        const wpm = Math.round((charIndex / 5) / (timeSpent / 60));
         const acc = charIndex > 0 ? Math.round(((charIndex - mistakes) / charIndex) * 100) : 0;
 
         document.getElementById('menu').style.display = 'none';
@@ -240,10 +249,12 @@
     }
 
     function saveAsTxt() {
-        const text = `MonkeyCode\nWPM: ${document.getElementById('res-wpm').innerText}\nAcc: ${document.getElementById('res-acc').innerText}`;
+        const text = `MonkeyCode Results\nWPM: ${document.getElementById('res-wpm').innerText}\nAccuracy: ${document.getElementById('res-acc').innerText}`;
         const blob = new Blob([text], {type: 'text/plain'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        a.download = 'score.txt'; a.click();
+        const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(blob);
+        a.download = 'typing_results.txt'; 
+        a.click();
     }
 
     document.querySelectorAll('.opt').forEach(opt => {
