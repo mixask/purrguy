@@ -9,7 +9,7 @@
             --bg-color: #323437;
             --main-color: #e2b714;
             --sub-color: #646669;
-            --text-color: #d1d0c5;
+            --text-color: #d100c5;
             --error-color: #ca4754;
         }
 
@@ -25,7 +25,6 @@
             overflow: hidden;
         }
 
-        /* Central Container */
         .main-wrapper {
             width: 100%;
             max-width: 1100px;
@@ -37,7 +36,6 @@
             text-align: center;
         }
 
-        /* Config Bar - Centered and Styled */
         .config-bar {
             display: flex;
             gap: 30px;
@@ -57,7 +55,6 @@
         .opt:hover, .opt.active { color: var(--text-color); }
         .opt.active { color: var(--main-color); }
 
-        /* Test Area */
         #test-container {
             width: 100%;
             position: relative;
@@ -70,7 +67,7 @@
             color: var(--sub-color);
             white-space: pre-wrap;
             word-break: break-word;
-            text-align: left; /* Kept left for readability while centered in container */
+            text-align: left;
             max-height: 50vh;
             overflow-y: hidden;
         }
@@ -87,7 +84,6 @@
             pointer-events: none;
         }
 
-        /* Results Display */
         #results-screen { 
             display: none; 
             animation: fadeIn 0.4s ease forwards; 
@@ -122,8 +118,10 @@
                 <b>type</b>
                 <span class="opt active" data-lang="en">english</span>
                 <span class="opt" data-lang="ru">russian</span>
+                <span class="opt" data-lang="lv">latvian</span>
                 <span class="opt" data-lang="js">javascript</span>
                 <span class="opt" data-lang="py">python</span>
+                <span class="opt" data-lang="rnd">randomize</span>
             </div>
             <div class="config-group" id="line-menu">
                 <b>density</b>
@@ -163,10 +161,18 @@
 
 <script>
     const contentPool = {
-        en: ["Focus on the journey, not the destination.", "Clean code always looks like it was written by someone who cares.", "The best way to predict the future is to invent it.", "Software is a great combination between artistry and engineering.", "Simplicity is the soul of efficiency.", "Talk is cheap. Show me the code.", "Stay hungry, stay foolish."],
-        ru: ["Программирование — это способ думать о вещах.", "Код должен быть понятен человеку, а не только машине.", "Семь раз отмерь, один раз отрежь.", "Ученье — свет, а неученье — тьма.", "Сложность — это враг надежности.", "Пишите код так, будто сопровождать его будет маньяк-психопат."],
-        js: ["const root = ReactDOM.createRoot(document.getElementById('root'));", "app.get('/', (req, res) => res.send('Hello World'));", "const result = data.filter(item => item.active).map(i => i.id);", "async function fetchData() { const res = await fetch(url); }", "setTimeout(() => { window.location.reload(); }, 1000);"],
-        py: ["def calculate_bmi(weight, height):\n    return weight / (height ** 2)", "print(f'Hello, {user_name}!')", "list_comp = [x for x in data if x > 10]", "import matplotlib.pyplot as plt\nplt.plot(x, y)\nplt.show()", "with open('config.json') as file:\n    data = json.load(file)"]
+        en: ["Focus on the journey — not the destination.", "Clean code looks like it was written by someone who cares.", "The best way to predict the future is to invent it.", "Software is a combination between artistry and engineering.", "Simplicity is the soul of efficiency.", "Talk is cheap — show me the code.", "Stay hungry — stay foolish."],
+        ru: ["Программирование — это способ думать о вещах.", "Код должен быть понятен человеку — а не только машине.", "Семь раз отмерь — один раз отрежь.", "Ученье — свет, а неученье — тьма.", "Сложность — это враг надежности.", "Пишите код так, будто сопровождать его будет маньяк-психопат."],
+        lv: ["Darbs dara darītāju — teica vecie latvieši.", "Mūžu dzīvo, mūžu mācies.", "Kas lēni nāk, tas labi nāk.", "Runāšana sudrabs, klusēšana zelts.", "Darbs ir goda lieta.", "Mazs cinītis gāž lielu vezumu — tāda ir dzīve."],
+        js: ["const root = ReactDOM.createRoot(document.getElementById('root'));", "app.get('/', (req, res) => res.send('Hello World'));", "const result = data.filter(item => item.active).map(i => i.id);", "async function fetchData() { const res = await fetch(url); }"],
+        py: ["def calculate_bmi(weight, height):\n    return weight / (height ** 2)", "print(f'Hello, {user_name}!')", "list_comp = [x for x in data if x > 10]", "with open('config.json') as file:\n    data = json.load(file)"],
+        chars: {
+            lv: "āčēģīķļņšūžĀČĒĢĪĶĻŅŠŪŽ",
+            ru: "абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ",
+            en: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            num: "0123456789",
+            punct: ".,!?;:—()\"'«»„“"
+        }
     };
 
     let activeLang = 'en', lineCount = 15, maxTime = 60, timeLeft = 60;
@@ -188,18 +194,35 @@
         timerLive.style.visibility = 'hidden';
         
         let rawContent = "";
-        let totalPhrases = activeLang.length > 2 ? lineCount : lineCount * 4; 
 
-        for(let i=0; i < totalPhrases; i++) {
-            let pool = contentPool[activeLang];
-            let phrase = pool[Math.floor(Math.random() * pool.length)];
-            rawContent += phrase + (activeLang.length > 2 ? "\n\n" : " ");
+        if (activeLang === 'rnd') {
+            const choice = prompt("Choose mode:\n1: Random Numbers\n2: Certain Letters\n3: Certain Numbers\n4: No Punctuation\n5: Everything Mixed", "5");
+            let pool = "";
+            
+            if (choice === "1") pool = contentPool.chars.num;
+            else if (choice === "2") pool = prompt("Enter specific letters to use:");
+            else if (choice === "3") pool = prompt("Enter specific numbers to use:").replace(/\D/g, '');
+            else if (choice === "4") pool = contentPool.chars.en + contentPool.chars.ru + contentPool.chars.lv + contentPool.chars.num;
+            else pool = contentPool.chars.en + contentPool.chars.ru + contentPool.chars.lv + contentPool.chars.num + contentPool.chars.punct;
+
+            if (!pool) pool = "error_no_characters_selected";
+
+            for(let i=0; i < lineCount * 5; i++) {
+                rawContent += pool.charAt(Math.floor(Math.random() * pool.length));
+                if (i % 8 === 0 && i !== 0) rawContent += " ";
+            }
+        } else {
+            let totalPhrases = activeLang.length > 2 ? lineCount : lineCount * 3; 
+            for(let i=0; i < totalPhrases; i++) {
+                let pool = contentPool[activeLang];
+                let phrase = pool[Math.floor(Math.random() * pool.length)];
+                rawContent += phrase + (activeLang === 'js' || activeLang === 'py' ? "\n\n" : " ");
+            }
         }
 
         rawContent.split('').forEach((char, i) => {
             const span = document.createElement('span');
             if (char === '\n') span.innerHTML = '↵\n';
-            else if (char === '\t') span.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;';
             else span.innerText = char;
             span.classList.add('letter');
             if(i === 0) span.classList.add('active');
@@ -223,7 +246,7 @@
 
         const currentChar = chars[charIndex];
         const lastTyped = typedVal[charIndex];
-        const expected = currentChar.innerText.includes('↵') ? '\n' : (currentChar.innerText === '' ? '\t' : currentChar.innerText);
+        const expected = currentChar.innerText.includes('↵') ? '\n' : currentChar.innerText;
 
         currentChar.classList.remove('active');
         if (lastTyped === expected) {
