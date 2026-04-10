@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Applekour Community</title>
+    <title>Applekour Community | Hard Clips</title>
     <style>
         body { 
             margin: 0; 
@@ -46,8 +46,20 @@
             text-align: center;
         }
 
-        h1 { font-size: 2.2rem; margin-bottom: 5px; }
-        p { color: #555; margin-bottom: 25px; font-size: 0.9rem; }
+        h1 { 
+            font-size: 2.2rem; 
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #ff6600, #ffcc00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        p { 
+            color: #888; 
+            margin-bottom: 25px; 
+            font-size: 0.9rem; 
+        }
 
         .inputs { display: flex; flex-direction: column; gap: 10px; }
         
@@ -67,7 +79,7 @@
         }
 
         button {
-            background: #fff;
+            background: linear-gradient(135deg, #ff6600, #ffcc00);
             color: #000;
             border: none;
             padding: 16px;
@@ -78,10 +90,15 @@
             transition: 0.3s;
         }
 
-        button:hover { background: #ddd; transform: translateY(-2px); }
+        button:hover { 
+            background: linear-gradient(135deg, #ff5500, #ffbb00);
+            transform: translateY(-2px); 
+        }
+        
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
         }
 
         .watermark {
@@ -123,6 +140,17 @@
             border: 1px solid #ffaa44;
             display: block;
         }
+        
+        .badge {
+            display: inline-block;
+            background: #ff6600;
+            color: #000;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 8px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -133,8 +161,8 @@
         </div>
 
         <div class="submit-section">
-            <h1>APPLEKOUR</h1>
-            <p>Upload your trick or provide a link</p>
+            <h1>APPLEKOUR <span class="badge">HARD CLIPS</span></h1>
+            <p>Community Hard Clips — Submit your best tricks</p>
             
             <div class="inputs">
                 <input type="text" id="nick" placeholder="In-game Nickname" required>
@@ -142,7 +170,7 @@
                 <input type="text" id="clip_link" placeholder="Link (YouTube, Streamable, etc.)">
                 <input type="file" id="clip_file" accept="video/mp4,video/webm,video/quicktime">
                 
-                <button onclick="sendToDiscord()">Submit Trick</button>
+                <button onclick="sendToDiscord()">Submit Hard Clip</button>
             </div>
             <div id="status" class="status"></div>
         </div>
@@ -152,7 +180,7 @@
 
     <script>
         // 👇 ЗАМЕНИ ЭТУ ССЫЛКУ НА ТВОЙ WEBHOOK URL 👇
-        const WEBHOOK_URL = "https://discord.com/api/webhooks/1492248793150783658/qBOtliE7nrzVN_yFLcnOsLvIw1yhE37AMIhUClZvOdDYQxFiluTxvZCw4-rkUg9vnAA0";
+        const WEBHOOK_URL = "https://discord.com/api/webhooks/ТВОЙ_АЙДИ/ТВОЙ_ТОКЕН";
 
         async function sendToDiscord() {
             const nick = document.getElementById('nick').value.trim();
@@ -164,7 +192,6 @@
             const statusDiv = document.getElementById('status');
             const submitBtn = document.querySelector('button');
             
-            // Валидация
             if(!nick || !disc) {
                 showStatus("❌ Please fill Name and Discord!", "error");
                 return;
@@ -175,33 +202,30 @@
                 return;
             }
             
-            // Проверка размера файла (Discord limit - 25MB)
             if(file && file.size > 25 * 1024 * 1024) {
                 showStatus("❌ File too large! Max 25MB for Discord.", "error");
                 return;
             }
             
-            // Блокируем кнопку, пока идёт отправка
             submitBtn.disabled = true;
             submitBtn.textContent = "Sending...";
-            showStatus("📤 Sending to Discord...", "loading");
+            showStatus("📤 Sending hard clip to Discord...", "loading");
             
             try {
                 if(file) {
-                    // Вариант 1: Отправка с файлом
                     const formData = new FormData();
                     formData.append("file", file);
                     
                     const payload = {
-                        content: `**🎯 APPLEKOUR COMMUNITY**\n**Player:** ${nick}\n**Discord:** ${disc}\n**Source:** Video file upload`,
+                        content: `**🔥 APPLEKOUR | HARD CLIP SUBMISSION 🔥**\n**Player:** ${nick}\n**Discord:** ${disc}\n**Source:** Video file upload`,
                         embeds: [{
                             color: 0xFF6600,
                             fields: [
-                                { name: "👤 Player Name", value: nick, inline: true },
+                                { name: "👤 Player", value: nick, inline: true },
                                 { name: "💬 Discord", value: disc, inline: true },
-                                { name: "📁 Type", value: "File Upload", inline: true }
+                                { name: "📁 Type", value: "Hard Clip (File)", inline: true }
                             ],
-                            footer: { text: "AppleKour Hard Tricks" },
+                            footer: { text: "AppleKour Community Hard Clips" },
                             timestamp: new Date().toISOString()
                         }]
                     };
@@ -214,25 +238,22 @@
                     });
                     
                     if(response.ok) {
-                        showStatus("✅ Clip successfully sent! Admin will review it.", "success");
+                        showStatus("✅ Hard clip successfully sent! Admin will review.", "success");
                         clearForm();
                     } else {
-                        const error = await response.text();
-                        console.error(error);
                         showStatus("❌ Error sending file. Try using a link instead.", "error");
                     }
                     
                 } else {
-                    // Вариант 2: Отправка только ссылки (без файла)
                     const embed = {
-                        title: "🎬 New Hard Trick Submission",
+                        title: "🎬 HARD CLIP SUBMISSION",
                         color: 0xFF6600,
                         fields: [
-                            { name: "👤 Player Name", value: nick, inline: true },
+                            { name: "👤 Player", value: nick, inline: true },
                             { name: "💬 Discord", value: disc, inline: true },
                             { name: "🔗 Clip Link", value: link, inline: false }
                         ],
-                        footer: { text: "AppleKour Community" },
+                        footer: { text: "AppleKour Community Hard Clips" },
                         timestamp: new Date().toISOString()
                     };
                     
@@ -240,13 +261,13 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            content: `**New submission from ${nick}**`,
+                            content: `**🔥 New Hard Clip from ${nick} 🔥**`,
                             embeds: [embed]
                         })
                     });
                     
                     if(response.ok) {
-                        showStatus("✅ Clip link successfully sent!", "success");
+                        showStatus("✅ Hard clip link successfully sent!", "success");
                         clearForm();
                     } else {
                         showStatus("❌ Error sending. Check webhook URL.", "error");
@@ -258,7 +279,7 @@
                 showStatus("❌ Connection error. Check your internet.", "error");
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = "Submit Trick";
+                submitBtn.textContent = "Submit Hard Clip";
             }
         }
         
