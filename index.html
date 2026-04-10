@@ -2,150 +2,141 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Applekour Community</title>
     <style>
-        /* Общие настройки для темной темы */
         body { 
             margin: 0; 
-            padding: 0; 
             background-color: #000; 
             color: #fff; 
-            font-family: 'Inter', 'Segoe UI', sans-serif; 
+            font-family: 'Inter', sans-serif; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
             min-height: 100vh;
         }
 
-        .container {
+        .main-container {
             width: 100%;
-            max-width: 800px;
-            padding: 40px 20px;
+            max-width: 700px; /* Делаем чуть компактнее для фокуса */
             display: flex;
             flex-direction: column;
             align-items: center;
-            text-align: center;
+            padding: 20px;
         }
 
-        /* Видео в рамке с круглыми углами */
-        .video-wrapper {
+        /* Рамка для видео с круглыми углами */
+        .video-box {
             width: 100%;
-            aspect-ratio: 16 / 9;
-            border-radius: 20px;
+            padding-top: 56.25%; /* Соотношение сторон 16:9 */
+            position: relative;
+            border-radius: 24px; /* Красивые круглые углы */
             overflow: hidden;
-            background: #111;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            margin-bottom: 40px;
+            background: #0a0a0a;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            margin-bottom: 30px;
         }
 
-        .video-wrapper iframe {
+        .video-box iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             border: none;
         }
 
-        /* Форма под видео */
-        .form-content {
+        /* Стили формы */
+        .submit-section {
             width: 100%;
-            max-width: 400px;
+            max-width: 380px;
+            text-align: center;
         }
 
-        h1 {
-            font-size: 2.5rem;
-            letter-spacing: -1px;
-            margin-bottom: 10px;
-        }
+        h1 { font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -1px; }
+        p { color: #555; margin-bottom: 25px; font-size: 0.95rem; }
 
-        p {
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
+        .inputs { display: flex; flex-direction: column; gap: 10px; }
+        
         input {
             background: #111;
             border: 1px solid #222;
             color: #fff;
-            padding: 15px;
-            border-radius: 10px;
+            padding: 14px;
+            border-radius: 12px;
             font-size: 1rem;
             transition: 0.2s;
         }
 
-        input:focus {
-            border-color: #444;
-            outline: none;
-            background: #151515;
-        }
+        input:focus { border-color: #555; outline: none; background: #151515; }
 
         button {
             background: #fff;
             color: #000;
             border: none;
             padding: 16px;
-            border-radius: 10px;
-            font-weight: 700;
+            border-radius: 12px;
+            font-weight: 800;
             cursor: pointer;
             margin-top: 10px;
             transition: 0.3s;
-            text-transform: uppercase;
         }
 
-        button:hover {
-            background: #ccc;
-            transform: translateY(-2px);
-        }
-
-        /* Старый MonkeyCode остался без изменений в логике, 
-           но если ты на Applekour — сработает этот стиль */
+        button:hover { background: #ddd; transform: translateY(-2px); }
     </style>
 </head>
-<body class="apple-theme">
+<body>
 
-    <div class="container" id="apple-ui">
-        <div class="video-wrapper">
-            <iframe src="https://streamable.com/dosqic?autoplay=1&mute=1&controls=0&loop=1&playlist=ymH6T6oI1Sg" allow="autoplay"></iframe>
+    <div class="main-container">
+        <div class="video-box">
+            <iframe src="https://streamable.com/e/dosqic?autoplay=1&muted=1&nocontrols=1" allow="autoplay"></iframe>
         </div>
 
-        <div class="form-content">
+        <div class="submit-section">
             <h1>APPLEKOUR</h1>
-            <p>Submit your community hard tricks</p>
+            <p>Parkour Legacy Modded Community</p>
             
-            <div class="input-group">
+            <div class="inputs">
                 <input type="text" id="nick" placeholder="In-game Nickname">
-                <input type="text" id="discord" placeholder="Discord Link or Tag">
-                <input type="text" id="clip" placeholder="Clip Link (YT/Streamable)">
-                <button onclick="sendToDiscord()">Submit Clip</button>
+                <input type="text" id="discord" placeholder="Discord Link / ID">
+                <input type="text" id="clip" placeholder="Clip Link">
+                <button onclick="sendToDiscord()">Submit Trick</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Проверка домена (как мы делали раньше)
-        const host = window.location.hostname;
-        if (!host.includes('applekour')) {
-            // Если зашли не через applekour, можно редиректнуть 
-            // или показать старый MonkeyCode через условие
-        }
+        // Не забудь вставить свой Webhook URL
+        const WEBHOOK_URL = "СЮДА_ВСТАВЬ_URL_ИЗ_ДИСКОРДА";
 
         function sendToDiscord() {
             const nick = document.getElementById('nick').value;
             const disc = document.getElementById('discord').value;
             const clip = document.getElementById('clip').value;
 
-            if(!nick || !disc || !clip) {
-                alert("Please fill all fields!");
-                return;
-            }
+            if(!nick || !disc || !clip) return alert("Fill all fields!");
 
-            // Тут будет логика бота
-            alert("Ready to send! Setting up the bot next...");
+            const payload = {
+                username: "Applekour Bot",
+                embeds: [{
+                    title: "🚀 New Clip Submitted!",
+                    color: 0xffffff,
+                    fields: [
+                        { name: "Nickname", value: nick, inline: true },
+                        { name: "Discord", value: disc, inline: true },
+                        { name: "Link", value: clip }
+                    ]
+                }]
+            };
+
+            fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                alert("Clip sent to direct messages!");
+            }).catch(err => {
+                alert("Error sending clip.");
+            });
         }
     </script>
 </body>
