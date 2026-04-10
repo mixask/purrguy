@@ -60,7 +60,6 @@
             font-size: 0.9rem;
         }
 
-        /* Стиль для выбора файла */
         input[type="file"] {
             cursor: pointer;
             font-size: 0.8rem;
@@ -80,17 +79,49 @@
         }
 
         button:hover { background: #ddd; transform: translateY(-2px); }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
-        /* Твой ник справа снизу */
         .watermark {
             position: fixed;
             bottom: 20px;
             right: 25px;
-            color: #333; /* Неяркий цвет, чтобы не отвлекал */
+            color: #333;
             font-size: 0.8rem;
             font-family: monospace;
             letter-spacing: 1px;
             user-select: none;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .status.success {
+            background: #0a2f1f;
+            color: #00ff88;
+            border: 1px solid #00ff88;
+            display: block;
+        }
+
+        .status.error {
+            background: #2f0a0a;
+            color: #ff4444;
+            border: 1px solid #ff4444;
+            display: block;
+        }
+
+        .status.loading {
+            background: #1a1a2f;
+            color: #ffaa44;
+            border: 1px solid #ffaa44;
+            display: block;
         }
     </style>
 </head>
@@ -106,61 +137,150 @@
             <p>Upload your trick or provide a link</p>
             
             <div class="inputs">
-                <input type="text" id="nick" placeholder="In-game Nickname">
-                <input type="text" id="discord" placeholder="Discord Link / ID">
-                <input type="text" id="clip_link" placeholder="Link (Optional)">
-                <input type="file" id="clip_file" accept="video/*">
+                <input type="text" id="nick" placeholder="In-game Nickname" required>
+                <input type="text" id="discord" placeholder="Discord Link / ID" required>
+                <input type="text" id="clip_link" placeholder="Link (YouTube, Streamable, etc.)">
+                <input type="file" id="clip_file" accept="video/mp4,video/webm,video/quicktime">
                 
                 <button onclick="sendToDiscord()">Submit Trick</button>
             </div>
+            <div id="status" class="status"></div>
         </div>
     </div>
 
     <div class="watermark">mikk319</div>
 
     <script>
-        const WEBHOOK_URL = "ТВОЙ_ВЕБХУК_URL";
+        // 👇 ЗАМЕНИ ЭТУ ССЫЛКУ НА ТВОЙ WEBHOOK URL 👇
+        const WEBHOOK_URL = "https://discord.com/api/webhooks/1492248793150783658/qBOtliE7nrzVN_yFLcnOsLvIw1yhE37AMIhUClZvOdDYQxFiluTxvZCw4-rkUg9vnAA0";
 
         async function sendToDiscord() {
-            const nick = document.getElementById('nick').value;
-            const disc = document.getElementById('discord').value;
-            const link = document.getElementById('clip_link').value;
+            const nick = document.getElementById('nick').value.trim();
+            const disc = document.getElementById('discord').value.trim();
+            const link = document.getElementById('clip_link').value.trim();
             const fileInput = document.getElementById('clip_file');
             const file = fileInput.files[0];
-
-            if(!nick || !disc) return alert("Please fill Name and Discord!");
-            if(!link && !file) return alert("Please provide a link or a file!");
-
-            const formData = new FormData();
             
-            // Если есть файл, добавляем его в FormData
-            if (file) {
-                formData.append("file", file);
+            const statusDiv = document.getElementById('status');
+            const submitBtn = document.querySelector('button');
+            
+            // Валидация
+            if(!nick || !disc) {
+                showStatus("❌ Please fill Name and Discord!", "error");
+                return;
             }
-
-            // Настройка сообщения (Payload)
-            const payload = {
-                content: `🚀 **New Clip!**\n**Nick:** ${nick}\n**Discord:** ${disc}\n**Link:** ${link || 'Uploaded as file'}`
-            };
-
-            formData.append("payload_json", JSON.stringify(payload));
-
+            
+            if(!link && !file) {
+                showStatus("❌ Please provide a link OR upload a video file!", "error");
+                return;
+            }
+            
+            // Проверка размера файла (Discord limit - 25MB)
+            if(file && file.size > 25 * 1024 * 1024) {
+                showStatus("❌ File too large! Max 25MB for Discord.", "error");
+                return;
+            }
+            
+            // Блокируем кнопку, пока идёт отправка
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Sending...";
+            showStatus("📤 Sending to Discord...", "loading");
+            
             try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    alert("Clip successfully sent!");
-                    // Сброс формы
-                    document.getElementById('clip_file').value = "";
+                if(file) {
+                    // Вариант 1: Отправка с файлом
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    
+                    const payload = {
+                        content: `**🎯 APPLEKOUR COMMUNITY**\n**Player:** ${nick}\n**Discord:** ${disc}\n**Source:** Video file upload`,
+                        embeds: [{
+                            color: 0xFF6600,
+                            fields: [
+                                { name: "👤 Player Name", value: nick, inline: true },
+                                { name: "💬 Discord", value: disc, inline: true },
+                                { name: "📁 Type", value: "File Upload", inline: true }
+                            ],
+                            footer: { text: "AppleKour Hard Tricks" },
+                            timestamp: new Date().toISOString()
+                        }]
+                    };
+                    
+                    formData.append("payload_json", JSON.stringify(payload));
+                    
+                    const response = await fetch(WEBHOOK_URL, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if(response.ok) {
+                        showStatus("✅ Clip successfully sent! Admin will review it.", "success");
+                        clearForm();
+                    } else {
+                        const error = await response.text();
+                        console.error(error);
+                        showStatus("❌ Error sending file. Try using a link instead.", "error");
+                    }
+                    
                 } else {
-                    alert("Error sending. Check file size (Discord limit).");
+                    // Вариант 2: Отправка только ссылки (без файла)
+                    const embed = {
+                        title: "🎬 New Hard Trick Submission",
+                        color: 0xFF6600,
+                        fields: [
+                            { name: "👤 Player Name", value: nick, inline: true },
+                            { name: "💬 Discord", value: disc, inline: true },
+                            { name: "🔗 Clip Link", value: link, inline: false }
+                        ],
+                        footer: { text: "AppleKour Community" },
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    const response = await fetch(WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            content: `**New submission from ${nick}**`,
+                            embeds: [embed]
+                        })
+                    });
+                    
+                    if(response.ok) {
+                        showStatus("✅ Clip link successfully sent!", "success");
+                        clearForm();
+                    } else {
+                        showStatus("❌ Error sending. Check webhook URL.", "error");
+                    }
                 }
+                
             } catch (err) {
-                alert("Connection error.");
+                console.error(err);
+                showStatus("❌ Connection error. Check your internet.", "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Submit Trick";
             }
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            
+            if(type === "success" || type === "error") {
+                setTimeout(() => {
+                    statusDiv.style.display = "none";
+                }, 5000);
+            } else {
+                statusDiv.style.display = "block";
+            }
+        }
+        
+        function clearForm() {
+            document.getElementById('nick').value = "";
+            document.getElementById('discord').value = "";
+            document.getElementById('clip_link').value = "";
+            document.getElementById('clip_file').value = "";
         }
     </script>
 </body>
