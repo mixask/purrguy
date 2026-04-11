@@ -4,305 +4,115 @@
     <meta charset="UTF-8">
     <title>Applekour Community | Hard Clips</title>
     <style>
-        body { 
-            margin: 0; 
-            background-color: #000; 
-            color: #fff; 
-            font-family: 'Inter', sans-serif; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh;
-            position: relative;
-        }
-
-        .main-container {
-            width: 100%;
-            max-width: 700px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .video-box {
-            width: 100%;
-            padding-top: 56.25%;
-            position: relative;
-            border-radius: 24px;
-            overflow: hidden;
-            background: #0a0a0a;
-            margin-bottom: 30px;
-        }
-
-        .video-box iframe {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%; border: none;
-        }
-
-        .submit-section {
-            width: 100%;
-            max-width: 380px;
-            text-align: center;
-        }
-
-        h1 { 
-            font-size: 2.2rem; 
-            margin-bottom: 5px;
-            background: linear-gradient(135deg, #ff6600, #ffcc00);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        
-        p { 
-            color: #888; 
-            margin-bottom: 25px; 
-            font-size: 0.9rem; 
-        }
-
-        .inputs { display: flex; flex-direction: column; gap: 10px; }
-        
-        input {
-            background: #111;
-            border: 1px solid #222;
-            color: #fff;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-        }
-
-        input[type="file"] {
-            cursor: pointer;
-            font-size: 0.8rem;
-            border: 1px dashed #444;
-        }
-
-        button {
-            background: linear-gradient(135deg, #ff6600, #ffcc00);
-            color: #000;
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-weight: 800;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: 0.3s;
-        }
-
-        button:hover { 
-            background: linear-gradient(135deg, #ff5500, #ffbb00);
-            transform: translateY(-2px); 
-        }
-        
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .watermark {
-            position: fixed;
-            bottom: 20px;
-            right: 25px;
-            color: #333;
-            font-size: 0.8rem;
-            font-family: monospace;
-            letter-spacing: 1px;
-            user-select: none;
-        }
-
-        .status {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            display: none;
-        }
-
-        .status.success {
-            background: #0a2f1f;
-            color: #00ff88;
-            border: 1px solid #00ff88;
-            display: block;
-        }
-
-        .status.error {
-            background: #2f0a0a;
-            color: #ff4444;
-            border: 1px solid #ff4444;
-            display: block;
-        }
-
-        .status.loading {
-            background: #1a1a2f;
-            color: #ffaa44;
-            border: 1px solid #ffaa44;
-            display: block;
-        }
-        
-        .badge {
-            display: inline-block;
-            background: #ff6600;
-            color: #000;
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 20px;
-            margin-left: 8px;
-            font-weight: bold;
-        }
+        body{margin:0;background-color:#000;color:#fff;font-family:'Inter',sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;position:relative}._0x1a2b{width:100%;max-width:700px;display:flex;flex-direction:column;align-items:center;padding:20px}._0x2c3d{width:100%;padding-top:56.25%;position:relative;border-radius:24px;overflow:hidden;background:#0a0a0a;margin-bottom:30px}._0x2c3d iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}._0x3e4f{width:100%;max-width:380px;text-align:center}._0x4g5h{font-size:2.2rem;margin-bottom:5px;background:linear-gradient(135deg,#ff6600,#ffcc00);-webkit-background-clip:text;background-clip:text;color:transparent}._0x5i6j{color:#888;margin-bottom:25px;font-size:.9rem}._0x6k7l{display:flex;flex-direction:column;gap:10px}input{background:#111;border:1px solid #222;color:#fff;padding:14px;border-radius:12px;font-size:.9rem}input[type="file"]{cursor:pointer;font-size:.8rem;border:1px dashed #444}button{background:linear-gradient(135deg,#ff6600,#ffcc00);color:#000;border:none;padding:16px;border-radius:12px;font-weight:800;cursor:pointer;margin-top:10px;transition:.3s}button:hover{background:linear-gradient(135deg,#ff5500,#ffbb00);transform:translateY(-2px)}button:disabled{opacity:.5;cursor:not-allowed;transform:none}._0x7m8n{position:fixed;bottom:20px;right:25px;color:#333;font-size:.8rem;font-family:monospace;letter-spacing:1px;user-select:none}._0x9o0p{margin-top:15px;padding:10px;border-radius:8px;font-size:.85rem;display:none}._0x9o0p._0xq1r2{background:#0a2f1f;color:#00ff88;border:1px solid #00ff88;display:block}._0x9o0p._0xs3t4{background:#2f0a0a;color:#ff4444;border:1px solid #ff4444;display:block}._0x9o0p._0xu5v6{background:#1a1a2f;color:#ffaa44;border:1px solid #ffaa44;display:block}._0xw7x8{display:inline-block;background:#ff6600;color:#000;font-size:.7rem;padding:2px 8px;border-radius:20px;margin-left:8px;font-weight:bold}
     </style>
 </head>
 <body>
+<div class="_0x1a2b"><div class="_0x2c3d"><iframe src="https://streamable.com/e/dosqic?autoplay=1&muted=1&nocontrols=1" allow="autoplay"></iframe></div><div class="_0x3e4f"><h1 class="_0x4g5h">APPLEKOUR <span class="_0xw7x8">HARD CLIPS</span></h1><p class="_0x5i6j">Community Hard Clips — Submit your best tricks</p><div class="_0x6k7l"><input type="text" id="_0ya9z" placeholder="In-game Nickname" required><input type="text" id="_0zb10" placeholder="Discord Link / ID" required><input type="text" id="_0ac11" placeholder="Link (YouTube, Streamable, etc.)"><input type="file" id="_0bd12" accept="video/mp4,video/webm,video/quicktime"><button onclick="_0xce13()">Submit Hard Clip</button></div><div id="_0df14" class="_0x9o0p"></div></div></div><div class="_0x7m8n">mikk319</div>
+<script>
+const _0x7g8h = "https://discord.com/api/webhooks/1492248793150783658/qBOtliE7nrzVN_yFLcnOsLvIw1yhE37AMIhUClZvOdDYQxFiluTxvZCw4-rkUg9vnAA0";
 
-    <div class="main-container">
-        <div class="video-box">
-            <iframe src="https://streamable.com/e/dosqic?autoplay=1&muted=1&nocontrols=1" allow="autoplay"></iframe>
-        </div>
-
-        <div class="submit-section">
-            <h1>APPLEKOUR <span class="badge">HARD CLIPS</span></h1>
-            <p>Community Hard Clips — Submit your best tricks</p>
-            
-            <div class="inputs">
-                <input type="text" id="nick" placeholder="In-game Nickname" required>
-                <input type="text" id="discord" placeholder="Discord Link / ID" required>
-                <input type="text" id="clip_link" placeholder="Link (YouTube, Streamable, etc.)">
-                <input type="file" id="clip_file" accept="video/mp4,video/webm,video/quicktime">
-                
-                <button onclick="sendToDiscord()">Submit Hard Clip</button>
-            </div>
-            <div id="status" class="status"></div>
-        </div>
-    </div>
-
-    <div class="watermark">mikk319</div>
-
-    <script>
-        // 👇 ЗАМЕНИ ЭТУ ССЫЛКУ НА ТВОЙ WEBHOOK URL 👇
-        const WEBHOOK_URL = "https://discord.com/api/webhooks/";
-
-        async function sendToDiscord() {
-            const nick = document.getElementById('nick').value.trim();
-            const disc = document.getElementById('discord').value.trim();
-            const link = document.getElementById('clip_link').value.trim();
-            const fileInput = document.getElementById('clip_file');
-            const file = fileInput.files[0];
-            
-            const statusDiv = document.getElementById('status');
-            const submitBtn = document.querySelector('button');
-            
-            if(!nick || !disc) {
-                showStatus("❌ Please fill Name and Discord!", "error");
-                return;
-            }
-            
-            if(!link && !file) {
-                showStatus("❌ Please provide a link OR upload a video file!", "error");
-                return;
-            }
-            
-            if(file && file.size > 25 * 1024 * 1024) {
-                showStatus("❌ File too large! Max 25MB for Discord.", "error");
-                return;
-            }
-            
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Sending...";
-            showStatus("📤 Sending hard clip to Discord...", "loading");
-            
-            try {
-                if(file) {
-                    const formData = new FormData();
-                    formData.append("file", file);
-                    
-                    const payload = {
-                        content: `**🔥 APPLEKOUR | HARD CLIP SUBMISSION 🔥**\n**Player:** ${nick}\n**Discord:** ${disc}\n**Source:** Video file upload`,
-                        embeds: [{
-                            color: 0xFF6600,
-                            fields: [
-                                { name: "👤 Player", value: nick, inline: true },
-                                { name: "💬 Discord", value: disc, inline: true },
-                                { name: "📁 Type", value: "Hard Clip (File)", inline: true }
-                            ],
-                            footer: { text: "AppleKour Community Hard Clips" },
-                            timestamp: new Date().toISOString()
-                        }]
-                    };
-                    
-                    formData.append("payload_json", JSON.stringify(payload));
-                    
-                    const response = await fetch(WEBHOOK_URL, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    if(response.ok) {
-                        showStatus("✅ Hard clip successfully sent! Admin will review.", "success");
-                        clearForm();
-                    } else {
-                        showStatus("❌ Error sending file. Try using a link instead.", "error");
-                    }
-                    
-                } else {
-                    const embed = {
-                        title: "🎬 HARD CLIP SUBMISSION",
-                        color: 0xFF6600,
-                        fields: [
-                            { name: "👤 Player", value: nick, inline: true },
-                            { name: "💬 Discord", value: disc, inline: true },
-                            { name: "🔗 Clip Link", value: link, inline: false }
-                        ],
-                        footer: { text: "AppleKour Community Hard Clips" },
-                        timestamp: new Date().toISOString()
-                    };
-                    
-                    const response = await fetch(WEBHOOK_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            content: `**🔥 New Hard Clip from ${nick} 🔥**`,
-                            embeds: [embed]
-                        })
-                    });
-                    
-                    if(response.ok) {
-                        showStatus("✅ Hard clip link successfully sent!", "success");
-                        clearForm();
-                    } else {
-                        showStatus("❌ Error sending. Check webhook URL.", "error");
-                    }
-                }
-                
-            } catch (err) {
-                console.error(err);
-                showStatus("❌ Connection error. Check your internet.", "error");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Submit Hard Clip";
-            }
-        }
-        
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('status');
-            statusDiv.textContent = message;
-            statusDiv.className = `status ${type}`;
-            
-            if(type === "success" || type === "error") {
-                setTimeout(() => {
-                    statusDiv.style.display = "none";
-                }, 5000);
+async function _0xce13() {
+    const nick = document.getElementById('_0ya9z').value.trim();
+    const disc = document.getElementById('_0zb10').value.trim();
+    const link = document.getElementById('_0ac11').value.trim();
+    const fileInput = document.getElementById('_0bd12');
+    const file = fileInput.files[0];
+    const statusDiv = document.getElementById('_0df14');
+    const submitBtn = document.querySelector('button');
+    
+    if (!nick || !disc) {
+        showStatus("❌ Please fill Name and Discord!", "error");
+        return;
+    }
+    if (!link && !file) {
+        showStatus("❌ Please provide a link OR upload a video file!", "error");
+        return;
+    }
+    if (file && file.size > 25 * 1024 * 1024) {
+        showStatus("❌ File too large! Max 25MB for Discord.", "error");
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Sending...";
+    showStatus("📤 Sending hard clip to Discord...", "loading");
+    
+    try {
+        if (file) {
+            const formData = new FormData();
+            formData.append("file", file);
+            const payload = {
+                content: `**🔥 APPLEKOUR | HARD CLIP SUBMISSION 🔥**\n**Player:** ${nick}\n**Discord:** ${disc}\n**Source:** Video file upload`,
+                embeds: [{
+                    color: 0xFF6600,
+                    fields: [
+                        { name: "👤 Player", value: nick, inline: true },
+                        { name: "💬 Discord", value: disc, inline: true },
+                        { name: "📁 Type", value: "Hard Clip (File)", inline: true }
+                    ],
+                    footer: { text: "AppleKour Community Hard Clips" },
+                    timestamp: new Date().toISOString()
+                }]
+            };
+            formData.append("payload_json", JSON.stringify(payload));
+            const response = await fetch(_0x7g8h, { method: 'POST', body: formData });
+            if (response.ok) {
+                showStatus("✅ Hard clip successfully sent! Admin will review.", "success");
+                clearForm();
             } else {
-                statusDiv.style.display = "block";
+                showStatus("❌ Error sending file. Try using a link instead.", "error");
+            }
+        } else {
+            const embed = {
+                title: "🎬 HARD CLIP SUBMISSION",
+                color: 0xFF6600,
+                fields: [
+                    { name: "👤 Player", value: nick, inline: true },
+                    { name: "💬 Discord", value: disc, inline: true },
+                    { name: "🔗 Clip Link", value: link, inline: false }
+                ],
+                footer: { text: "AppleKour Community Hard Clips" },
+                timestamp: new Date().toISOString()
+            };
+            const response = await fetch(_0x7g8h, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: `**🔥 New Hard Clip from ${nick} 🔥**`, embeds: [embed] })
+            });
+            if (response.ok) {
+                showStatus("✅ Hard clip link successfully sent!", "success");
+                clearForm();
+            } else {
+                showStatus("❌ Error sending. Check webhook URL.", "error");
             }
         }
-        
-        function clearForm() {
-            document.getElementById('nick').value = "";
-            document.getElementById('discord').value = "";
-            document.getElementById('clip_link').value = "";
-            document.getElementById('clip_file').value = "";
-        }
-    </script>
+    } catch (err) {
+        console.error(err);
+        showStatus("❌ Connection error. Check your internet.", "error");
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit Hard Clip";
+    }
+}
+
+function showStatus(message, type) {
+    const statusDiv = document.getElementById('_0df14');
+    statusDiv.textContent = message;
+    statusDiv.className = `status ${type}`;
+    if (type === "success" || type === "error") {
+        setTimeout(() => { statusDiv.style.display = "none"; }, 5000);
+    } else {
+        statusDiv.style.display = "block";
+    }
+}
+
+function clearForm() {
+    document.getElementById('_0ya9z').value = "";
+    document.getElementById('_0zb10').value = "";
+    document.getElementById('_0ac11').value = "";
+    document.getElementById('_0bd12').value = "";
+}
+</script>
 </body>
 </html>
