@@ -253,25 +253,48 @@
 <script>
 const _0x7g8h = "https://discord.com/api/webhooks/1492248793150783658/qBOtliE7nrzVN_yFLcnOsLvIw1yhE37AMIhUClZvOdDYQxFiluTxvZCw4-rkUg9vnAA0";
 
-// Функция проверки Roblox пользователя
+// УЛУЧШЕННАЯ функция проверки Roblox пользователя
 async function checkRobloxUser(username) {
     try {
-        const response = await fetch(`https://users.roblox.com/v1/users/search?keyword=${encodeURIComponent(username)}&limit=1`);
-        const data = await response.json();
+        // Способ 1: Поиск через API с точным совпадением
+        const searchResponse = await fetch(`https://users.roblox.com/v1/users/search?keyword=${encodeURIComponent(username)}&limit=10`);
+        const searchData = await searchResponse.json();
         
-        if (data.data && data.data.length > 0) {
-            const user = data.data[0];
-            // Точное совпадение по имени (игнорируя регистр)
-            if (user.name.toLowerCase() === username.toLowerCase()) {
+        if (searchData.data && searchData.data.length > 0) {
+            // Ищем точное совпадение (игнорируя регистр)
+            const exactMatch = searchData.data.find(user => 
+                user.name.toLowerCase() === username.toLowerCase()
+            );
+            
+            if (exactMatch) {
                 return {
                     exists: true,
-                    id: user.id,
-                    username: user.name,
-                    displayName: user.displayName
+                    id: exactMatch.id,
+                    username: exactMatch.name,
+                    displayName: exactMatch.displayName
                 };
             }
         }
+        
+        // Способ 2: Прямой запрос по имени (если поиск не сработал)
+        try {
+            const directResponse = await fetch(`https://api.roblox.com/users/get-by-username?username=${encodeURIComponent(username)}`);
+            const directData = await directResponse.json();
+            
+            if (directData && directData.Id) {
+                return {
+                    exists: true,
+                    id: directData.Id,
+                    username: directData.Username,
+                    displayName: directData.Username
+                };
+            }
+        } catch (e) {
+            console.log("Direct API method failed, continuing...");
+        }
+        
         return { exists: false };
+        
     } catch (error) {
         console.error("Roblox API error:", error);
         return { exists: false, error: true };
@@ -308,12 +331,12 @@ async function _0xce13() {
     submitBtn.textContent = "Checking Roblox...";
     showStatus("🔍 Checking Roblox user...", "loading");
     
-    // ПРОВЕРКА ROБЛОКС ИГРОКА
+    // ПРОВЕРКА ROBLOX ИГРОКА
     const robloxCheck = await checkRobloxUser(robloxUsername);
     
     // Если игрок не найден - ОСТАНАВЛИВАЕМ запрос
     if (!robloxCheck.exists) {
-        showStatus("❌ Roblox user not found! Please check your username.", "error");
+        showStatus(`❌ Roblox user "${robloxUsername}" not found! Please check your username.`, "error");
         submitBtn.disabled = false;
         submitBtn.textContent = "Submit Hard Clip";
         return;
@@ -328,11 +351,11 @@ async function _0xce13() {
             const formData = new FormData();
             formData.append("file", file);
             const payload = {
-                content: `**🔥 APPLEKOUR | HARD CLIP SUBMISSION 🔥**\n**Roblox:** ${robloxCheck.username} (${robloxCheck.displayName})\n**Roblox ID:** ${robloxCheck.id}\n**Discord:** ${disc}\n**Source:** Video file upload`,
+                content: `**🔥 APPLEKOUR | HARD CLIP SUBMISSION 🔥**\n**Roblox:** @${robloxCheck.username} (${robloxCheck.displayName})\n**Roblox ID:** ${robloxCheck.id}\n**Discord:** ${disc}\n**Source:** Video file upload`,
                 embeds: [{
                     color: 0xFFFFFF,
                     fields: [
-                        { name: "👤 Roblox User", value: `${robloxCheck.username} (${robloxCheck.displayName})`, inline: true },
+                        { name: "👤 Roblox User", value: `@${robloxCheck.username} (${robloxCheck.displayName})`, inline: true },
                         { name: "🆔 Roblox ID", value: robloxCheck.id.toString(), inline: true },
                         { name: "💬 Discord", value: disc, inline: true },
                         { name: "📁 Type", value: "Hard Clip (File)", inline: true }
@@ -354,7 +377,7 @@ async function _0xce13() {
                 title: "🎬 HARD CLIP SUBMISSION",
                 color: 0xFFFFFF,
                 fields: [
-                    { name: "👤 Roblox User", value: `${robloxCheck.username} (${robloxCheck.displayName})`, inline: true },
+                    { name: "👤 Roblox User", value: `@${robloxCheck.username} (${robloxCheck.displayName})`, inline: true },
                     { name: "🆔 Roblox ID", value: robloxCheck.id.toString(), inline: true },
                     { name: "💬 Discord", value: disc, inline: true },
                     { name: "🔗 Clip Link", value: link, inline: false }
@@ -365,7 +388,7 @@ async function _0xce13() {
             const response = await fetch(_0x7g8h, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: `**🔥 New Hard Clip from ${robloxCheck.username} 🔥**`, embeds: [embed] })
+                body: JSON.stringify({ content: `**🔥 New Hard Clip from @${robloxCheck.username} 🔥**`, embeds: [embed] })
             });
             if (response.ok) {
                 showStatus("✅ Hard clip link successfully sent!", "success");
